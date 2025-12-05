@@ -1,0 +1,9 @@
+{
+  "title": "Reference",
+  "pages": [
+    "index",
+    "recon-modules",
+    "vuln-modules",
+    "exploit-modules"
+  ]
+}

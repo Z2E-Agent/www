@@ -1,0 +1,61 @@
+---
+title: Quick Start
+description: Get up and running with Z2E in minutes.
+---
+
+## Quick Start Guide
+
+This guide will help you run your first automated scan with Z2E.
+
+---
+
+## Basic Usage
+
+```bash
+bash# z2e
+
+z2e > agent
+
+...
+```
+
+---
+
+## Command Overview
+
+| Command | Description |
+|---------|-------------|
+| `z2e init` | Initialize a new project |
+| `z2e agent` | Agent mode start |
+| `z2e scan` | Run reconnaissance and vulnerability scanning |
+| `z2e exploit` | Execute validated exploits (authorized targets only) |
+| `z2e report` | Generate penetration test reports |
+
+---
+
+## Example Workflow
+
+```bash
+# 1. Set up your target scope
+z2e scope add example.com --include-subdomains
+
+# 2. Run AI-assisted reconnaissance
+z2e recon --ai-enhanced
+
+# 3. Analyze attack surface
+z2e surface --analyze
+
+# 4. Verify vulnerabilities
+z2e verify --all
+
+# 5. Generate report
+z2e report --format pdf --output report.pdf
+```
+
+---
+
+## Next Steps
+
+<Cards>
+  <Card title="Configuration" href="/docs/getting-started/configuration" />
+</Cards>
