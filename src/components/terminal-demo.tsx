@@ -70,7 +70,7 @@ export function TerminalDemo() {
       <div className="bg-[#2d2d2d] px-4 py-2 flex items-center gap-2 border-b border-[#333]">
         <div className="flex gap-2">
         </div>
-        <div className="flex-1 text-center text-gray-400 text-xs">leon — Kitty</div>
+        <div className="flex-1 text-center text-gray-400 text-xs uppercase tracking-widest">leon — Kitty</div>
       </div>
 
       <div className="p-4 min-h-[360px] text-gray-300 font-medium leading-relaxed">
@@ -78,11 +78,15 @@ export function TerminalDemo() {
           const item = script[i];
           const isCommand = item?.type === "command";
           
+          let promptColor = "text-green-400";
+          if (item?.prompt === "> ") promptColor = "text-blue-400";
+          if (item?.prompt === "# ") promptColor = "text-red-500";
+          
           return (
             <div key={i} className="break-words">
               {isCommand ? (
                 <span>
-                  <span className={item.prompt === "> " ? "text-blue-400 font-bold" : "text-red-400 font-bold"}>
+                  <span className={`${promptColor} font-bold`}>
                     {item.prompt}
                   </span>
                   <span className="text-white">{line.replace(item.prompt || "", "")}</span>
