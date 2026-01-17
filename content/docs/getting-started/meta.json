@@ -2,7 +2,6 @@
   "title": "Getting Started",
   "pages": [
     "installation",
-    "quickstart",
-    "configuration"
+    "quickstart"
   ]
 }

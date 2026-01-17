@@ -12,44 +12,22 @@ This guide will help you run your first automated scan with Z2E.
 ## Basic Usage
 
 ```bash
-bash# z2e
+z2e agent auto
 
-z2e > agent
+ oooooooooooo   .oooo.   oooooooooooo               .o.                                            .   
+d'""""""d888' .dP""Y88b  `888'     `8              .888.                                         .o8   
+      .888P         ]8P'  888                     .8"888.      .oooooooo  .ooooo.  ooo. .oo.   .o888oo 
+     d888'        .d8P'   888oooo8               .8' `888.    888' `88b  d88' `88b `888P"Y88b    888   
+   .888P        .dP'      888    "    8888888   .88ooo8888.   888   888  888ooo888  888   888    888   
+  d888'    .P .oP     .o  888       o          .8'     `888.  `88bod8P'  888    .o  888   888    888 . 
+.8888888888P  8888888888 o888ooooood8         o88o     o8888o `8oooooo.  `Y8bod8P' o888o o888o   "888" 
+                                                              d"     YD                                
+                                                              "Y88888P'                                
 
-...
-```
+  z2e :: 0.1.0-alpha
 
----
-
-## Command Overview
-
-| Command | Description |
-|---------|-------------|
-| `z2e init` | Initialize a new project |
-| `z2e agent` | Agent mode start |
-| `z2e scan` | Run reconnaissance and vulnerability scanning |
-| `z2e exploit` | Execute validated exploits (authorized targets only) |
-| `z2e report` | Generate penetration test reports |
-
----
-
-## Example Workflow
-
-```bash
-# 1. Set up your target scope
-z2e scope add example.com --include-subdomains
-
-# 2. Run AI-assisted reconnaissance
-z2e recon --ai-enhanced
-
-# 3. Analyze attack surface
-z2e surface --analyze
-
-# 4. Verify vulnerabilities
-z2e verify --all
-
-# 5. Generate report
-z2e report --format pdf --output report.pdf
+:: Imagine an agent that works for you 24/7 finding vulnerabilities automatically :D
+z2e-agent >
 ```
 
 ---
