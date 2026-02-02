@@ -34,7 +34,7 @@ export default function HomePage() {
       {/* Video/Preview Section */}
       <section className="pb-20 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
         <div className="max-w-4xl mx-auto">
-          <YouTubePlayer videoId="dQw4w9WgXcQ" title="Z2E Demo" />
+          <YouTubePlayer videoId="HAi5yNHPB6U" title="Z2E Demo" />
         </div>
       </section>
 
