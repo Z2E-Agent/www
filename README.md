@@ -6,7 +6,7 @@ A powerful framework for simulating real-world cyber attacks for redteam pentest
 [![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Fumadocs](https://img.shields.io/badge/Fumadocs-16.6-purple?style=for-the-badge)](https://fumadocs.vercel.app/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38bdf8?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38bdf8?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
 ## Tech Stack
 
