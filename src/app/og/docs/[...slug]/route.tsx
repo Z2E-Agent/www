@@ -18,7 +18,7 @@ export async function GET(
       <DefaultImage
         title={page.data.title}
         description={page.data.description}
-        site="Z2E"
+        site="Z2E-Agent"
       />
     ),
     {

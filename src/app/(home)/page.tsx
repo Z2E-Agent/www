@@ -96,7 +96,7 @@ export default function HomePage() {
 
       <footer className="py-8 px-4 border-t border-fd-border">
         <div className="mx-auto max-w-[var(--fd-layout-width)] text-center text-fd-muted-foreground text-sm">
-          © {new Date().getFullYear()} Z²ᴱ Team. All rights reserved.
+          © {new Date().getFullYear()} Z2E-Agent Team. All rights reserved.
         </div>
       </footer>
     </main>

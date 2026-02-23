@@ -9,7 +9,7 @@ export function TerminalDemo() {
 
   const script = [
     { text: "z2e_terminal auto", type: "command", prompt: "leon@arch:~$ " },
-    { text: "[Z2E Agent] Have you ever thought about automating your bug bounty hunting?", type: "info"},
+    { text: "[Z2E-Agent] Have you ever thought about automating your bug bounty hunting?", type: "info"},
     { text: "Hey Z2E Solve this web challenges, ctf2025.hitcon.org", type: "command", prompt: "> " },
     { text: "[*] Analyzing target: hitcon.org [Web Exploitation]", type: "info", delay: 800 },
     { text: "[*] Scanning for vulnerabilities...", type: "info", delay: 400 },

@@ -8,19 +8,19 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://z2e.team'),
   title: {
     template: '%s',
-    default: 'Z2E - AI-Powered Penetration Testing',
+    default: 'Z2E-Agent-Agent - AI-Powered Penetration Testing',
   },
-  description: 'Z2E is an AI-powered penetration testing framework that automates security assessments from reconnaissance to exploitation.',
+  description: 'Z2E-Agent-Agent is an AI-powered penetration testing framework that automates security assessments from reconnaissance to exploitation.',
   openGraph: {
-    title: 'Z2E - AI-Powered Penetration Testing',
-    description: 'Z2E is an AI-powered penetration testing framework that automates security assessments from reconnaissance to exploitation.',
-    siteName: 'Z2E',
+    title: 'Z2E-Agent - AI-Powered Penetration Testing',
+    description: 'Z2E-Agent is an AI-powered penetration testing framework that automates security assessments from reconnaissance to exploitation.',
+    siteName: 'Z2E-Agent',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Z2E - AI-Powered Penetration Testing',
-    description: 'Z2E is an AI-powered penetration testing framework that automates security assessments from reconnaissance to exploitation.',
+    title: 'Z2E-Agent - AI-Powered Penetration Testing',
+    description: 'Z2E-Agent is an AI-powered penetration testing framework that automates security assessments from reconnaissance to exploitation.',
   },
 };
 
