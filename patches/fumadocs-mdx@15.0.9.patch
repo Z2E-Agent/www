@@ -1,0 +1,13 @@
+diff --git a/dist/node/index.js b/dist/node/index.js
+index f5c39b0d93dc74def2995e80d62863b6baf13ebb..5291fd7db5b416029ade525ec51c891888f3795e 100644
+--- a/dist/node/index.js
++++ b/dist/node/index.js
+@@ -1,7 +1,7 @@
+ import * as module from "node:module";
+ //#region src/node/index.ts
+ function register(options = {}) {
+-	module.register("./_loader.js", import.meta.url, { data: options });
++	module.registerHooks("./_loader.js", import.meta.url, { data: options });
+ }
+ //#endregion
+ export { register };
