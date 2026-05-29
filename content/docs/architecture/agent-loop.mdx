@@ -89,12 +89,12 @@ If the model returns content with no tool calls and no substantive text for 2 co
 
 ## Retry Logic
 
-LLM calls use exponential backoff:
+LLM calls retry on failure with linear backoff:
 
-```
-Retry 0: immediate
-Retry 1: 1s delay
-Retry 2: 2s delay
-```
+| Attempt | Delay |
+|---------|-------|
+| 1st | Immediate |
+| 2nd | 2s |
+| 3rd | 4s |
 
 Each retry re-sends the complete conversation history. Only LLM gateway errors trigger retries; tool execution errors are reported back to the model as observations.

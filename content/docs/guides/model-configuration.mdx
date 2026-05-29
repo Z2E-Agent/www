@@ -59,15 +59,16 @@ Type `/model` in the TUI composer to open the interactive model picker. This:
 
 ## Retry Logic
 
-Gateway calls retry on failure with exponential backoff:
+Gateway calls retry on failure with exponential backoff and jitter:
 
 | Attempt | Delay |
 |---------|-------|
 | 1st | Immediate |
-| 2nd | 1 second |
-| 3rd | 2 seconds |
+| 2nd | Exponential backoff + jitter |
+| 3rd | Exponential backoff + jitter |
+| 4th | Exponential backoff + jitter |
 
-Only gateway transport errors trigger retries (not model-level errors or tool execution failures).
+Only transient errors trigger retries: HTTP 429/500/502/503/504, connection resets, refused connections, EOF, broken pipe, DNS failures, and timeouts.
 
 ## Provider Routing
 

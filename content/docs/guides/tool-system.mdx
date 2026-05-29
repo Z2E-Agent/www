@@ -55,19 +55,36 @@ func Run(ctx context.Context, command string, timeout time.Duration) Result
 
 ## Observation Schema
 
-Tool results are returned in a structured format:
+Tool results are returned as a structured JSON envelope (`schema: z2e.tool_observation.v1`):
 
+```json
+{
+  "schema": "z2e.tool_observation.v1",
+  "timestamp": "2026-05-29T15:48:00Z",
+  "session": {
+    "started_at": "...",
+    "steps": 5,
+    "executed_commands": 3,
+    "observations": 3
+  },
+  "tool": {
+    "tool": "bash",
+    "call_id": "call_xxx",
+    "command": "nmap -sV example.com",
+    "workdir": "/home/user",
+    "raw": "compact(2000 chars)"
+  },
+  "result": {
+    "status": "completed",
+    "exit_code": 0,
+    "timed_out": false,
+    "interactive": false,
+    "output": "compact(6000 chars)"
+  }
+}
 ```
-z2e.tool_observation.v1
-├── tool_call_id: string
-├── tool_name: "bash" | "run_command"
-├── stdout: string (truncated to 64KB)
-├── stderr: string (truncated to 64KB)
-├── exit_code: int
-├── truncated: bool
-├── duration_ms: int
-└── interactive: bool
-```
+
+The `output` field is compacted to 6000 characters for the LLM prompt. The raw capture buffer is 64KB.
 
 ## Safety Guards
 
@@ -75,7 +92,7 @@ z2e.tool_observation.v1
 3 consecutive identical command signatures terminate the agent loop.
 
 ### Output Overflow
-Output beyond 64KB is truncated. The observation includes a `truncated: true` flag.
+Output beyond 64KB in the raw capture is truncated. The LLM-facing `output` field is further compacted to 6000 characters.
 
 ### Timeout Enforcement
 Commands exceeding the timeout are killed via context cancellation. The observation includes the partial output captured before termination.
