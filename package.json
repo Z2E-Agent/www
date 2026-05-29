@@ -8,7 +8,8 @@
     "start": "next start",
     "postinstall": "fumadocs-mdx",
     "lint": "eslint",
-    "release": "bumpp"
+    "release": "bumpp",
+    "prepare": "husky"
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",
@@ -30,6 +31,7 @@
     "bumpp": "^11.1.0",
     "eslint": "^10.4.0",
     "eslint-config-next": "16.2.6",
+    "husky": "^9.1.7",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3"
