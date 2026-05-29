@@ -1,0 +1,81 @@
+---
+title: Model Configuration
+description: Configure LLM providers, models, and gateway settings.
+---
+
+The agent connects to an AI Gateway that routes requests to 250+ models across multiple providers. The gateway client lives in `internal/llm/gateway/client.go` and the model catalog is in `internal/llm/gateway/models.json`.
+
+## Architecture
+
+```text
+z2e-terminal → AI Gateway → Provider API
+                    │
+              SSE Stream
+                    │
+         Text deltas + Tool calls
+```
+
+All communication uses SSE (Server-Sent Events) streaming for real-time output.
+
+## Configuration
+
+Environment variables control model selection:
+
+```bash
+# Required
+AI_GATEWAY_API_KEY=sk-...
+VERCEL_AI_GATEWAY_API_KEY=sk-...        # Alias
+
+# Optional
+AI_GATEWAY_BASE_URL=https://ai-gateway.vercel.sh/v1
+AI_GATEWAY_MODEL=openai/gpt-5.2
+VERCEL_AI_GATEWAY_MODEL=openai/gpt-5.2  # Alias
+```
+
+## Model Catalog
+
+The model catalog (`models.json`) contains 250+ entries. Models are organized by provider:
+
+| Provider | Notable Models |
+|----------|----------------|
+| OpenAI | `o3`, `gpt-5.2`, `gpt-4.1`, `gpt-4o-mini`, `o1`, `o1-mini` |
+| Anthropic | `claude-sonnet-4-20250514`, `claude-3.7-sonnet`, `claude-3.5-haiku` |
+| Google | `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.0-flash` |
+| DeepSeek | `deepseek-chat`, `deepseek-reasoner` |
+| Meta | `llama-4-scout`, `llama-4-maverick`, `llama-3.3-70b` |
+| Mistral | `mistral-large`, `codestral`, `ministral` |
+| xAI | `grok-3`, `grok-3-fast`, `grok-3-mini` |
+
+Default: `openai/gpt-5.2`
+
+## Runtime Model Switching
+
+Type `/model` in the TUI composer to open the interactive model picker. This:
+
+1. Lists all models from the catalog
+2. Highlights the currently active model
+3. Updates the model on selection
+4. Shows the new model name in the status bar
+
+## Retry Logic
+
+Gateway calls retry on failure with exponential backoff:
+
+| Attempt | Delay |
+|---------|-------|
+| 1st | Immediate |
+| 2nd | 1 second |
+| 3rd | 2 seconds |
+
+Only gateway transport errors trigger retries (not model-level errors or tool execution failures).
+
+## Provider Routing
+
+The AI Gateway handles provider-specific routing:
+
+- **OpenAI**: Chat completions API
+- **Anthropic**: Messages API
+- **Google**: Gemini API
+- **Others**: Unified chat completions interface
+
+Model names use the format `<provider>/<model-name>` (e.g., `openai/gpt-4o-mini`).

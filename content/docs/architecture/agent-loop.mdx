@@ -1,0 +1,100 @@
+---
+title: Agent Loop
+description: How the autonomous Plan -> Execute -> Observe -> Replan cycle works.
+---
+
+The agent runtime (`internal/agent/runtime.go`) drives a synchronous step loop. Each step is one LLM turn plus optional tool executions.
+
+## Loop Overview
+
+```text
+     ┌──────────────────────────────────┐
+     │           Step Loop              │
+     │         (max 30 steps)           │
+     │                                  │
+     │  ┌─────────┐    ┌──────────┐    │
+     │  │  LLM    │───>│ Aggregate│    │
+     │  │  Turn   │    │ tool_call│    │
+     │  └────┬────┘    └────┬─────┘    │
+     │       │              │          │
+     │  ┌────▼────┐   ┌────▼─────┐    │
+     │  │  Emit   │   │ Execute  │    │
+     │  │ response│   │ (bash)   │    │
+     │  └─────────┘   └────┬─────┘    │
+     │                     │          │
+     │              ┌──────▼──────┐   │
+     │              │  Observe   │   │
+     │              │ & Replan   │   │
+     │              └──────┬──────┘   │
+     │                     │          │
+     └─────────────────────┼──────────┘
+                           │
+                    ┌──────▼──────┐
+                    │  Terminal   │
+                    │  Conditions │
+                    └─────────────┘
+```
+
+## Step-by-Step
+
+### 1. LLM Turn
+- Sends the full conversation history to the model
+- Uses SSE streaming via `internal/llm/gateway/client.go`
+- Streams response chunks directly to the TUI in real-time
+- Up to 3 retries with exponential backoff on failure
+- Tracks token usage per turn
+
+### 2. Aggregate Tool Calls
+- Tool calls arrive as SSE data fragments
+- Fragments are merged by `tool_call_id` index
+- Handles parallel tool calls (multiple in one turn)
+
+### 3. Emit Assistant Response
+- Complete assistant message is appended to the chat history
+- Rendered via glamour markdown in the TUI transcript
+
+### 4. Execute Tools
+Each tool call runs sequentially:
+- Maps tool name to handler (`bash` / `run_command`)
+- Policy check (pure pass-through; only empty commands blocked)
+- Executes via `internal/executor/runner.go` (`bash -lc`)
+- Interactive command detection (heuristic)
+- Timeout: 60s default, max 10 minutes
+- Output capped at 64KB
+
+### 5. Observe & Replan
+- Output packaged as `z2e.tool_observation.v1`
+- Appended to chat history
+- Loop continues to next LLM turn
+
+## Terminal Conditions
+
+The loop stops when any of these are met:
+
+| Condition | Threshold | File |
+|-----------|-----------|------|
+| Final answer | Model emits final answer marker | `runtime.go` |
+| Max steps | 30 | `runtime.go` |
+| Doom-loop | 3 identical command signatures | `runtime.go` |
+| Empty turns | 2 consecutive empty responses | `runtime.go` |
+| Error | Unrecoverable LLM or execution error | `runtime.go` |
+
+## Doom-Loop Protection
+
+The agent tracks a rolling window of command signatures (normalized command strings). If 3 consecutive tool calls produce identical signatures, the loop terminates. This prevents the model from repeating the same failing command indefinitely.
+
+## Empty-Turn Detection
+
+If the model returns content with no tool calls and no substantive text for 2 consecutive turns, the loop terminates. This catches cases where the model enters a non-responsive state.
+
+## Retry Logic
+
+LLM calls use exponential backoff:
+
+```
+Retry 0: immediate
+Retry 1: 1s delay
+Retry 2: 2s delay
+```
+
+Each retry re-sends the complete conversation history. Only LLM gateway errors trigger retries; tool execution errors are reported back to the model as observations.

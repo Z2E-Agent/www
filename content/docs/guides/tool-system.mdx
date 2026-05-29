@@ -1,0 +1,84 @@
+---
+title: Tool System
+description: Available tools, execution policy, and safety guards.
+---
+
+The agent uses a tool-calling interface to execute shell commands on the host system. Tool definitions and handlers live in `internal/agent/tools.go` (~435 LOC).
+
+## Available Tools
+
+| Tool Name | Alias | Description |
+|-----------|-------|-------------|
+| `bash` | `run_command` | Execute a shell command via `bash -lc` |
+
+Both names map to the same handler (backward compatibility).
+
+## Execution Flow
+
+```text
+LLM emits tool_call → Policy Check → Runner → Output → Observation
+                                            ↓
+                                      64KB truncation
+                                         + timeout
+```
+
+1. Agent runtime extracts tool name and arguments from the LLM response
+2. **Policy check** (`internal/agent/policy.go`): validates the command
+3. **Runner** (`internal/executor/runner.go`): executes via `bash -lc`
+4. Output is captured, truncated to 64KB, and wrapped in an observation envelope
+5. Observation is appended to chat history for the next LLM turn
+
+## Command Policy
+
+The current policy is **pure pass-through**:
+
+- All commands are allowed (no blocklist, no allowlist)
+- Only empty commands are blocked
+- No sandboxing, chroot, namespace isolation, or seccomp
+
+This is suitable for controlled/authorized environments. Production deployments should implement additional restrictions.
+
+## Runner Details
+
+```go
+// internal/executor/runner.go
+func Run(ctx context.Context, command string, timeout time.Duration) Result
+```
+
+- Shell: `bash -lc '<command>'`
+- Default timeout: 60 seconds
+- Maximum timeout: 10 minutes
+- Output capture: stdout + stderr combined
+- Output truncation: 64KB max
+- Interactive command heuristic detection
+- Exit code captured in result
+
+## Observation Schema
+
+Tool results are returned in a structured format:
+
+```
+z2e.tool_observation.v1
+├── tool_call_id: string
+├── tool_name: "bash" | "run_command"
+├── stdout: string (truncated to 64KB)
+├── stderr: string (truncated to 64KB)
+├── exit_code: int
+├── truncated: bool
+├── duration_ms: int
+└── interactive: bool
+```
+
+## Safety Guards
+
+### Doom-Loop Detection
+3 consecutive identical command signatures terminate the agent loop.
+
+### Output Overflow
+Output beyond 64KB is truncated. The observation includes a `truncated: true` flag.
+
+### Timeout Enforcement
+Commands exceeding the timeout are killed via context cancellation. The observation includes the partial output captured before termination.
+
+### Empty Command Rejection
+Empty or whitespace-only commands are rejected at the policy level.

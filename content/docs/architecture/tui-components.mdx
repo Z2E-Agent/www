@@ -1,0 +1,88 @@
+---
+title: TUI Architecture
+description: Bubble Tea component tree and rendering pipeline.
+---
+
+The TUI is built with the **Bubble Tea** framework (`github.com/charmbracelet/bubbletea`) and lives in `internal/ui/model.go` (~1,360 LOC).
+
+## Component Tree
+
+```text
+├── AppModel
+│   ├── Transcript (viewport.Model)
+│   │   └── Rendered markdown (glamour)
+│   ├── Composer (textarea.Model)
+│   │   └── Input area + send on Enter
+│   ├── StatusBar (lipgloss)
+│   │   ├── Model name
+│   │   ├── Connection state
+│   │   ├── Step counter
+│   │   └── Mode indicator
+│   ├── ModelPicker (list.Model)
+│   │   └── /model command overlay
+│   └── RuntimeBridge (goroutine)
+│       └── Stream events → tea.Cmd
+```
+
+## Core Components
+
+### Transcript
+- Wraps `bubbles/viewport.Model`
+- Displays agent conversation as rendered markdown
+- Uses `glamour` for terminal-compatible markdown rendering
+- Supports scrolling with PgUp/PgDn, Home/End
+- Auto-scrolls to bottom on new content
+
+### Composer
+- Wraps `bubbles/textarea.Model`
+- Bottom-anchored input bar
+- Enter sends the message
+- Ctrl+L clears content
+- Supports multiline input
+
+### Status Bar
+- Custom lipgloss-rendered bar at the bottom
+- Shows:
+  - Current model name (e.g., `openai/gpt-5.2`)
+  - Connection state (connected/connecting/error)
+  - Current step number (e.g., `Step 3/30`)
+  - Mode indicator (normal/demo)
+
+### Model Picker
+- Triggered by typing `/model` in the composer
+- Shows a list of available models from the catalog
+- Selection updates the active model at runtime
+- Returns to normal mode after selection
+
+## Streaming Pipeline
+
+SSE chunks travel through a 7-stage pipeline:
+
+```text
+SSE Chunk → Gateway Client → Stream Bridge → TUI Update → Lipgloss Render → Terminal
+                     ↘ Agent Runtime (tool calls) ↗
+```
+
+1. **SSE Chunk**: Raw `data:` lines from the AI Gateway
+2. **Gateway Client**: Parses SSE, extracts text deltas and tool call fragments
+3. **Stream Bridge**: (`stream.go`) Translates gateway events into `tea.Msg` types
+4. **TUI Update**: `AppModel.Update()` handles each message type
+5. **Lipgloss Render**: `AppModel.View()` produces the final string
+6. **Terminal**: Bubble Tea writes to the terminal via the alt screen
+
+## Message Types
+
+| Message | Source | Handler |
+|---------|--------|---------|
+| `submitMsg` | Composer Enter key | Starts agent runtime |
+| `streamChunkMsg` | Gateway SSE | Appends to transcript, accumulates tool calls |
+| `toolResultMsg` | Executor completion | Appends observation to chat |
+| `stepMsg` | Agent loop tick | Updates step counter |
+| `modelSwitchMsg` | Model picker | Swaps active model config |
+
+## Key Design Decisions
+
+- **No goroutine sharing**: All mutable state flows through `tea.Cmd`/`Msg` channel
+- **Alt screen**: Uses `tea.WithAltScreen()` for full-screen TUI
+- **Mouse support**: `tea.WithMouseCellMotion()` for scroll wheel and selection
+- **Synchronous agent loop**: Agent runs on a goroutine but sends results as messages back to the main TUI loop

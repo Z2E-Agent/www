@@ -1,0 +1,91 @@
+---
+title: Debugging & Observability
+description: Session snapshots, tracing, and troubleshooting.
+---
+
+The agent includes built-in observability through session snapshots and per-step trace files. The debug system lives in `internal/agent/session_debug.go` (~237 LOC).
+
+## Session Snapshot
+
+A live JSON snapshot is written on every state change:
+
+**Path**: `/tmp/z2e-terminal/session.json`
+
+The file is updated atomically (write to temp file, rename) to prevent partial reads.
+
+```json
+{
+  "version": "v0.2.2",
+  "started_at": "2026-05-29T15:48:00Z",
+  "elapsed_seconds": 142.3,
+  "step": 5,
+  "max_steps": 30,
+  "status": "running",
+  "model": "openai/gpt-5.2",
+  "turns": [
+    {
+      "role": "assistant",
+      "content": "...",
+      "tool_calls": [...]
+    },
+    {
+      "role": "user",
+      "content": "...",
+      "tool_results": [...]
+    }
+  ],
+  "recent_commands": [
+    "nmap -sV example.com",
+    "nmap -p- example.com"
+  ]
+}
+```
+
+## Per-Step Traces
+
+Each step is also written to a timestamped file:
+
+**Path**: `/tmp/z2e-terminal/<YYYY-MM-DD>/<HH-MM-SS>.json`
+
+These files contain the same data as the live snapshot but are preserved across steps, giving a complete history of the session.
+
+## Key Fields
+
+| Field | Description |
+|-------|-------------|
+| `version` | Agent version |
+| `step` | Current step number |
+| `max_steps` | Maximum allowed steps |
+| `status` | `running`, `completed`, `error`, `doom_loop`, `empty_turn` |
+| `model` | Active model name |
+| `turns` | Full conversation history |
+| `recent_commands` | Rolling window of last N commands (for doom-loop detection) |
+| `elapsed_seconds` | Wall-clock time since session start |
+
+## Troubleshooting
+
+### Agent Not Starting
+
+1. Check the `.env` file has a valid `AI_GATEWAY_API_KEY`
+2. Verify network connectivity to the gateway endpoint
+3. Check `/tmp/z2e-terminal/session.json` for error messages
+4. Run with `./main` directly (not `just run`) to see stderr
+
+### No Output / Empty Responses
+
+- Check the model is responding; try a different model via `/model`
+- Verify the model supports tool calling (chat models only)
+- Check gateway logs for 4xx/5xx responses
+
+### Commands Timing Out
+
+- Increase the timeout (modify `internal/executor/runner.go`)
+- Check if the command requires interactive input
+- Verify the command exists on the system PATH
+
+### Doom-Loop Triggered
+
+The agent is repeating the same failing command. This usually means:
+- The command cannot succeed (missing binary, wrong syntax)
+- The output is being misinterpreted by the model
+- Try running the command manually first to confirm behavior
