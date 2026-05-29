@@ -16,19 +16,24 @@ Or directly:
 ```
 
 This starts the Bubble Tea TUI with:
-- **Transcript area** - Scrollable output of the agent conversation
-- **Composer** - Bottom input bar for typing missions
-- **Status bar** - Shows model name, connection state, step count
+- **Output panel** - Scrollable agent conversation
+- **Input area** - Bottom message input (vim-style modal: `i`/`a` to insert, `Esc` to normal)
+- **Header** - Title + status indicator (idle / streaming)
+- **Footer** - Mode, model name, turn count, keybinding help
 
 ## Controls
 
 | Key | Action |
 |-----|--------|
-| `Enter` | Send message / execute command |
-| `Ctrl+L` | Clear transcript |
+| `Enter` | Send message |
+| `i` / `a` | Enter insert mode |
+| `Esc` | Return to normal mode |
+| `Ctrl+L` | Clear output |
 | `Ctrl+C` | Quit |
-| `PgUp` / `PgDn` | Scroll transcript |
-| `Home` / `End` | Jump to top / bottom |
+| `PgUp` / `PgDn` `k` / `j` | Scroll |
+| `g` / `Home` | Jump to top |
+| `G` / `End` | Jump to bottom |
+| `m` | Toggle mouse select on/off |
 | `/model` | Open model picker |
 
 ## Run a Mission
@@ -53,21 +58,6 @@ Enumerate subdomains for example.org
 
 ```text
 Check if example.com has any HTTP security headers
-```
-
-## Demo Mode
-
-Pre-recorded demo scenarios are available:
-
-```bash
-# General demo
-./main --demo
-
-# Nmap-focused demo
-./main --demo-nmap
-
-# PicoCTF challenge demo
-./main --demo-pico
 ```
 
 ## Debugging
