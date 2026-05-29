@@ -92,10 +92,8 @@ export default function HomePage() {
   return (
     <main className="flex flex-1 flex-col bg-fd-background text-fd-foreground">
       {/* Hero Section */}
-      <section className="relative flex flex-1 flex-col justify-center py-28 px-4 mx-auto w-full max-w-[var(--fd-layout-width)] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-fd-primary/5 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-1/4 right-0 w-[600px] h-[600px] bg-fd-primary/3 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative max-w-4xl">
+      <section className="flex flex-1 flex-col justify-center py-28 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
+        <div className="max-w-4xl">
           <div className="mb-6 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-fd-border bg-fd-card text-xs text-fd-muted-foreground">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
