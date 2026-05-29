@@ -1,6 +1,78 @@
 ---
 title: Quick Start
-description: Get up and running with Z2E-Agent in minutes.
+description: Get up and running with z2e-terminal in minutes.
 ---
 
-Nothing yet.
+## Launch the TUI
+
+```bash
+just run
+```
+
+Or directly:
+
+```bash
+./main
+```
+
+This starts the Bubble Tea TUI with:
+- **Transcript area** - Scrollable output of the agent conversation
+- **Composer** - Bottom input bar for typing missions
+- **Status bar** - Shows model name, connection state, step count
+
+## Controls
+
+| Key | Action |
+|-----|--------|
+| `Enter` | Send message / execute command |
+| `Ctrl+L` | Clear transcript |
+| `Ctrl+C` | Quit |
+| `PgUp` / `PgDn` | Scroll transcript |
+| `Home` / `End` | Jump to top / bottom |
+| `/model` | Open model picker |
+
+## Run a Mission
+
+Once the TUI is loaded, type a natural-language mission and press Enter. The agent will:
+
+1. **Plan** how to approach the objective
+2. **Execute** shell commands autonomously
+3. **Observe** the output
+4. **Replan** based on results
+5. **Deliver** a final answer when done
+
+Example missions:
+
+```text
+Scan open ports on example.com with nmap
+```
+
+```text
+Enumerate subdomains for example.org
+```
+
+```text
+Check if example.com has any HTTP security headers
+```
+
+## Demo Mode
+
+Pre-recorded demo scenarios are available:
+
+```bash
+# General demo
+./main --demo
+
+# Nmap-focused demo
+./main --demo-nmap
+
+# PicoCTF challenge demo
+./main --demo-pico
+```
+
+## Debugging
+
+During a session, live state is written to:
+
+- **Live snapshot**: `/tmp/z2e-terminal/session.json`
+- **Per-step traces**: `/tmp/z2e-terminal/YYYY-MM-DD/HH-MM-SS.json`

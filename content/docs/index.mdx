@@ -1,16 +1,97 @@
 ---
 title: Overview
-description: AI-driven automation for the next generation of offensive security operations.
+description: Autonomous AI agent TUI for penetration testing and CTF challenges.
 ---
 
-Our project is about an autonomous AI-Agent that utilizes LLMs to orchestrate security tools, conduct deep reconnaissance, and automate the discovery and exploitation of vulnerabilities in a controlled and professional manner.
+z2e-terminal is an autonomous AI agent TUI built with **Go** and **Bubble Tea**. It accepts natural-language missions, plans and executes multi-step CLI actions autonomously, observes output, reasons, and iterates until the objective is reached or runtime limits are hit.
 
-with Fully AI automate reconnaissance, vulnerability analysis, exploitation, and reporting. This establishing a continuous, adaptive testing architecture capable of simulating real threat actor behaviors.
+```text
+                           ┌─────────────┐
+                           │    User      │
+                           │   Input      │
+                           └──────┬──────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │        UI Layer           │
+                    │   (Bubble Tea TUI)         │
+                    │  model.go / stream.go     │
+                    └─────────────┬─────────────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │     Agent Runtime         │
+                    │  Plan -> Execute -> Observe│
+                    │  -> Replan (up to 30 steps)│
+                    └──┬──────────┬─────────────┘
+                       │          │
+          ┌────────────▼──┐  ┌────▼────────────┐
+          │  LLM Gateway  │  │    Executor     │
+          │  (SSE stream) │  │  (bash -lc)     │
+          │  client.go    │  │  runner.go      │
+          └───────────────┘  └─────────────────┘
+```
 
-Z2E-Agent redefines efficiency in security testing by automating repetitive phases such as enumeration, scanning, verification, and exploitation while maintaining precision through data-driven decision models.
+## Current Version
 
-## Core Features
+v0.2.2
 
-- **AI Integration:** Embed artificial intelligence for pattern recognition in vulnerabilities and exploit generation.
-- **Full Automation:** Build an end-to-end pipeline from reconnaissance to exploitation with minimal human input.
-- **Comprehensive Reporting:** Generate detailed reports including attack paths, PoCs, remediation insights.
+## Core Architecture
+
+| Layer | Package | Responsibility |
+|-------|---------|----------------|
+| TUI | `internal/ui/` | Terminal UI: transcript, composer, status bar, model picker, streaming |
+| Agent | `internal/agent/` | Core loop: LLM turns, tool execution, policy, debug snapshots |
+| LLM | `internal/llm/gateway/` | SSE streaming client, 250+ model catalog, retry with backoff |
+| Executor | `internal/executor/` | `bash -lc` shell runner with timeout, output capture, truncation |
+| Config | `internal/config/` | Environment config loader for API keys and model settings |
+
+## Agent Loop
+
+The core loop is Plan -> Execute -> Observe -> Replan:
+
+1. **LLM Turn**: Send conversation to the model via SSE streaming (up to 3 retries)
+2. **Aggregate**: Collect tool_calls from stream fragments
+3. **Emit**: Stream assistant response to TUI
+4. **Execute**: Run each tool call via `bash -lc`
+5. **Observe**: Package output as `z2e.tool_observation.v1` and append to chat
+6. **Replan**: Repeat until final answer, max steps (30), doom-loop, empty-turn, or error
+
+### Safety Guards
+
+- **Max tool steps**: 30
+- **Doom-loop detection**: 3 identical command signatures in a row
+- **Max empty turns**: 2
+- **Max LLM retries**: 2 per step
+- **Command timeout**: 60s default, 10 min max
+- **Output cap**: 64KB
+
+## Features
+
+- **Autonomous agent loop** - Plan -> Execute -> Observe -> Replan
+- **Tool execution** - bash / run_command tools (pure pass-through policy)
+- **Streaming output** - Real-time SSE streaming from AI Gateway
+- **Markdown rendering** - glamour for terminal markdown display
+- **Runtime model switching** - `/model` command
+- **LLM retry with backoff** - Up to 2 retries per step
+- **CTF-oriented system prompt** - Built-in security testing persona
+- **Session debug snapshots** - `/tmp/z2e-terminal/session.json`
+
+## Model Support
+
+250+ models across providers configured in `internal/llm/gateway/models.json`:
+
+| Provider | Models |
+|----------|--------|
+| OpenAI | o3, gpt-5.2, gpt-4.1, gpt-4o-mini, o1, o1-mini |
+| Anthropic | claude-sonnet-4-20250514, claude-3.7-sonnet, claude-3.5-haiku |
+| Google | gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash |
+| DeepSeek | deepseek-chat, deepseek-reasoner |
+| Meta | llama-4-scout, llama-4-maverick, llama-3.3-70b |
+| Mistral | mistral-large, codestral, ministral |
+| xAI | grok-3, grok-3-fast, grok-3-mini |
+
+Default model: `openai/gpt-5.2`
+
+## Language
+
+- **Go**: ~4,000 LOC in cmd/ + internal/
+- **Dependencies**: bubbletea, bubbles, glamour, lipgloss, godotenv

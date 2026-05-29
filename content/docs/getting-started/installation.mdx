@@ -1,14 +1,60 @@
 ---
 title: Installation
-description: Get started with Z2E-Agent installation and setup.
+description: Install and configure z2e-terminal.
 ---
 
 ## Prerequisites
 
-Before installing Z2E-Agent, ensure you have the following:
+- **Go** 1.23+ (required for building from source)
+- **Bun** (optional, for the www documentation site)
+- **Git** (for cloning repositories)
 
-- **Go** - Required for the CLI agent
-- **Docker** - For containerized deployment
-- **Git** - For cloning repositories
+## Clone & Build
 
-<Callout type="info">The Z2E-Agent isn't finished yet, so this is just a preview of the feature.</Callout>
+```bash
+git clone https://github.com/Z2E-Agent/z2e-terminal.git
+cd z2e-terminal
+
+# Build the binary
+go build -o main ./cmd/z2e-terminal/
+
+# Or use just (if installed)
+just build
+```
+
+The binary is output to `./main` in the project root.
+
+## Environment Configuration
+
+Copy the example env file and configure your AI Gateway credentials:
+
+```bash
+cp .env.example .env
+```
+
+Required environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `AI_GATEWAY_API_KEY` | Your AI Gateway API key |
+| `VERCEL_AI_GATEWAY_API_KEY` | Alias for the above |
+
+Optional environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AI_GATEWAY_BASE_URL` | `https://ai-gateway.vercel.sh/v1` | Gateway endpoint |
+| `AI_GATEWAY_MODEL` | `openai/gpt-5.2` | Default model |
+| `VERCEL_AI_GATEWAY_MODEL` | Same as above | Alias |
+
+## Verify Installation
+
+```bash
+# Start the TUI
+just run
+
+# Or directly
+./main
+```
+
+You should see the Z2E terminal interface with a prompt area and status bar.

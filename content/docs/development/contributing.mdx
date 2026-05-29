@@ -1,19 +1,91 @@
 ---
 title: Contributing
-description: How to contribute to Z2E development.
+description: How to contribute to z2e-terminal development.
 ---
 
-## Contributing
+## Project Structure
 
-We welcome contributions to Z2E! Here's how to get started.
+```
+z2e-terminal/
+├── cmd/z2e-terminal/     # Entry point (main.go, ~41 LOC)
+├── internal/
+│   ├── agent/            # Agent runtime, tools, policy, debug
+│   │   ├── runtime.go    # Core agent loop (~303 LOC)
+│   │   ├── tools.go      # Tool definitions + execution (~435 LOC)
+│   │   ├── policy.go     # Command policy (~19 LOC)
+│   │   ├── prompt.go     # System prompt loader (~27 LOC)
+│   │   ├── session_debug.go  # Debug snapshots (~237 LOC)
+│   │   ├── types.go      # Shared types (~53 LOC)
+│   │   └── prompts/      # Embedded system prompt
+│   ├── config/           # Env config loader
+│   ├── executor/         # Shell command runner (~141 LOC)
+│   ├── llm/gateway/      # SSE streaming client + model catalog
+│   └── ui/               # Bubble Tea TUI (~1,360 LOC)
+├── docs/diagrams/        # Architecture diagram prompts (11 files)
+├── Analysis/             # Deep analysis reports
+└── Diagram/              # AI-generated diagram prompts
+```
 
-... Not public yet
+Total: ~4,000 LOC of Go across a clean 5-layer architecture.
 
----
+## Build & Test
+
+```bash
+# Build
+just build
+go build -o main ./cmd/z2e-terminal/
+
+# Format
+just fmt
+go fmt ./...
+
+# Vet
+just vet
+go vet ./...
+
+# Test (currently 0 tests exist — contributions welcome!)
+just test
+go test ./...
+```
+
+## Pre-commit Checklist
+
+1. `go fmt ./...` - Format all code
+2. `go vet ./...` - Static analysis
+3. `go build ./...` - Ensure compilation
+4. `just run` - Manual smoke test (verify TUI starts)
+
+## Code Style
+
+- Follow standard Go conventions (`gofmt`)
+- Error handling: prefer early returns, wrap errors with context
+- No panics in production code paths (TUI model can recover gracefully)
+- Bubble Tea: `Model` struct with `Init()`, `Update()`, `View()` pattern
+- Agent runtime: explicit step loop with guard checks, no goroutine races
+
+## Key Design Decisions
+
+- **Pure pass-through policy**: All commands pass through without restriction (empty commands blocked). No sandboxing.
+- **SSE streaming**: LLM responses streamed character-by-character through a 7-stage pipeline.
+- **No goroutine sharing**: All mutable state flows through Bubble Tea's `Cmd`/`Msg` channel.
+- **Doom-loop protection**: Detects 3+ identical command signatures and terminates.
+
+## Documentation
+
+- Update docs in `www/content/docs/` (this Fumadocs site)
+- Diagram prompts live in `docs/diagrams/` — 11 files covering architecture, flows, deployment
+- Architecture analysis in `Analysis/ClaudeCode_vs_Z2E_Deep_Analysis.md`
+
+## Open Issues
+
+- **No automated tests** — Zero `_test.go` files exist
+- **Documentation-to-code ratio** is high (~3,000 LOC docs vs ~4,000 LOC code)
+- **model.go** dominates at 1,360 LOC — consider splitting
+- **No HTTP client timeout** on LLM gateway requests
+- **Stale binary** (`main`, ~20MB) in repo root
+- **`go 1.26.1`** in go.mod is a placeholder (no such Go release exists)
 
 ## Contact
 
 - **Email:** contact@z2e.team
 - **GitHub:** [Z2E-Agent](https://github.com/Z2E-Agent)
-
-© Z2E-Agent Offensive Research Division • Engineered by Lam Kin, Z2E-Agent Team.
