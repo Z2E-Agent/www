@@ -40,7 +40,7 @@ export default function HomePage() {
       {/* Video/Preview Section */}
       <section className="pb-20 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
         <div className="max-w-4xl mx-auto">
-          <YouTubePlayer videoId="HAi5yNHPB6U" title="Z2E Demo" />
+          <YouTubePlayer videoId="2txyf_5lsOo" title="Z2E Demo" />
         </div>
       </section>
 
@@ -119,7 +119,7 @@ export default function HomePage() {
       {/* Terminal Demo */}
       <section className="py-20 px-4 mx-auto w-full max-w-[var(--fd-layout-width)] border-t border-fd-border">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-semibold mb-8">No GUI, just a terminal</h2>
+          <h2 className="text-3xl font-semibold mb-8">Autonomous agent in action</h2>
           <TerminalDemo />
         </div>
       </section>
