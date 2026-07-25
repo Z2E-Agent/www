@@ -57,9 +57,10 @@ const amiriQuran = Amiri_Quran({
 
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${inter.variable} ${ebGaramond.variable} ${amiriQuran.variable}`} suppressHydrationWarning>
-      <body className="flex flex-col min-h-screen">
+    <html lang="en" className={`dark ${inter.variable} ${ebGaramond.variable} ${amiriQuran.variable}`} suppressHydrationWarning>
+      <body className="flex flex-col min-h-screen bg-fd-background text-fd-foreground">
         <RootProvider
+          theme={{ forcedTheme: 'dark' }}
           search={{
             hotKey: [
               {
