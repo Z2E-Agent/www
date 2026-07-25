@@ -11,16 +11,40 @@ export const metadata: Metadata = {
     default: 'Z2E-Agent-Agent - AI-Powered Penetration Testing',
   },
   description: 'Z2E-Agent-Agent is an AI-powered penetration testing framework that automates security assessments from reconnaissance to exploitation.',
+  applicationName: 'Z²ᴱ-Agent',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.ico', rel: 'icon' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/site.webmanifest',
+  appleWebApp: {
+    title: 'Z²ᴱ-Agent',
+    statusBarStyle: 'black-translucent',
+  },
   openGraph: {
     title: 'Z2E-Agent - AI-Powered Penetration Testing',
     description: 'Z2E-Agent is an AI-powered penetration testing framework that automates security assessments from reconnaissance to exploitation.',
     siteName: 'Z2E-Agent',
     type: 'website',
+    images: [
+      {
+        url: '/og-default.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Z²ᴱ-Agent',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Z2E-Agent - AI-Powered Penetration Testing',
     description: 'Z2E-Agent is an AI-powered penetration testing framework that automates security assessments from reconnaissance to exploitation.',
+    images: ['/og-default.jpg'],
   },
 };
 
