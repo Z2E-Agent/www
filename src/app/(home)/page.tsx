@@ -7,7 +7,6 @@ const features = [
   {
     title: 'Agent Loop',
     desc: 'Plan, execute, observe, replan. SSE streaming, doom-loop detection, up to 30 autonomous steps per mission.',
-    tag: 'runtime',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -17,7 +16,6 @@ const features = [
   {
     title: '250+ Models',
     desc: 'Route through any AI Gateway provider. Switch at runtime via /model. OpenAI, Anthropic, Google, DeepSeek, Meta, Mistral, xAI.',
-    tag: 'gateway',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
@@ -29,7 +27,6 @@ const features = [
   {
     title: 'CTF System Prompt',
     desc: 'Built-in CTF persona with crypto, web exploitation, OSINT methodology. Tool-first, evidence-based iteration.',
-    tag: 'prompt',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
@@ -40,7 +37,6 @@ const features = [
   {
     title: 'Tool Execution',
     desc: 'Pure pass-through policy. bash / run_command with timeout enforcement, 64KB output capture, doom-loop guard.',
-    tag: 'executor',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <path d="m4 17 6-6-6-6" />
@@ -51,7 +47,6 @@ const features = [
   {
     title: 'Session Debug',
     desc: 'Live JSON snapshot at /tmp/z2e-terminal/session.json. Per-step traces, full history, doom-loop monitoring.',
-    tag: 'debug',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <circle cx="12" cy="12" r="10" />
@@ -63,7 +58,6 @@ const features = [
   {
     title: 'Bubble Tea TUI',
     desc: 'Vim-style modal input, glamour markdown render, runtime model picker, full mouse support, alt-screen.',
-    tag: 'ui',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <polyline points="16 18 22 12 16 6" />
@@ -73,12 +67,12 @@ const features = [
   },
 ];
 
-const layers = [
-  { name: 'TUI', desc: 'Bubble Tea', file: 'internal/ui/' },
-  { name: 'Agent', desc: 'Runtime + Tools', file: 'internal/agent/' },
-  { name: 'Gateway', desc: 'SSE Client', file: 'internal/llm/gateway/' },
-  { name: 'Executor', desc: 'Shell Runner', file: 'internal/executor/' },
-  { name: 'Config', desc: 'Env Loader', file: 'internal/config/' },
+const pipeline = [
+  { step: '01', name: 'Receive', desc: 'Natural-language mission from operator.' },
+  { step: '02', name: 'Plan', desc: 'Agent reasons, picks tools, sequences steps.' },
+  { step: '03', name: 'Execute', desc: 'Runs shell commands, captures output live.' },
+  { step: '04', name: 'Observe', desc: 'Parses results, validates, learns from output.' },
+  { step: '05', name: 'Iterate', desc: 'Replans until objective reached or cap hit.' },
 ];
 
 const stats = [
@@ -277,13 +271,8 @@ export default function HomePage() {
                 key={feature.title}
                 className="group relative flex flex-col p-5 border border-fd-border bg-fd-card hover:border-red-500/40 hover:bg-fd-card/60 transition-colors duration-200"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-9 h-9 flex items-center justify-center border border-fd-border bg-fd-background text-fd-muted-foreground group-hover:text-red-500 group-hover:border-red-500/40 transition-colors">
-                    {feature.icon}
-                  </div>
-                  <span className="font-mono text-[10px] text-fd-muted-foreground/40 uppercase tracking-wider">
-                    {feature.tag}
-                  </span>
+                <div className="w-9 h-9 flex items-center justify-center border border-fd-border bg-fd-background text-fd-muted-foreground group-hover:text-red-500 group-hover:border-red-500/40 transition-colors mb-3">
+                  {feature.icon}
                 </div>
                 <h3 className="text-base font-semibold mb-1.5">{feature.title}</h3>
                 <p className="text-sm text-fd-muted-foreground leading-relaxed">{feature.desc}</p>
@@ -293,42 +282,49 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Architecture — tree command output */}
+      {/* Architecture — agent loop pipeline */}
       <section className="py-12 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
         <div className="max-w-3xl mx-auto">
-          <div className="mb-6 px-1">
-            <div className="font-mono text-[11px] text-red-500 mb-1">root@z2e:~# tree internal/ -L 1</div>
-            <h2 className="text-3xl font-semibold font-[family-name:var(--font-eb-garamond)]">Architecture</h2>
+          <div className="mb-8 px-1">
+            <div className="font-mono text-[11px] text-red-500 mb-1">root@z2e:~# agent --loop</div>
+            <h2 className="text-3xl font-semibold font-[family-name:var(--font-eb-garamond)]">How it works</h2>
             <p className="text-fd-muted-foreground mt-2 text-sm">
-              ~4k LOC of Go across 5 clean layers.
+              One mission, five stages, zero hand-holding.
             </p>
           </div>
 
-          {/* Terminal tree output */}
-          <div className="border border-fd-border bg-[#0d0d0d] dark:bg-[#0d0d0d] overflow-hidden">
-            <div className="px-4 py-1.5 border-b border-neutral-800 bg-[#1a1a1a] flex items-center gap-2">
-              <span className="w-2 h-2 bg-red-500/80" />
-              <span className="font-mono text-[11px] text-neutral-400">z2e-terminal — internal/</span>
-            </div>
-            <div className="p-5 font-mono text-sm">
-              <div className="space-y-1">
-                {layers.map((layer, i) => (
-                  <div key={layer.name} className="flex items-center gap-2 text-neutral-300">
-                    {i === layers.length - 1 ? (
-                      <span className="text-neutral-600 select-none">└── </span>
-                    ) : (
-                      <span className="text-neutral-600 select-none">├── </span>
-                    )}
-                    <span className="text-blue-400">{layer.file}</span>
-                    <span className="text-neutral-600"># {layer.name} · {layer.desc}</span>
+          {/* Pipeline flow */}
+          <div className="flex flex-col md:flex-row gap-2 md:gap-0">
+            {pipeline.map((p, i) => (
+              <div key={p.step} className="flex flex-col md:flex-row md:flex-1">
+                <div className="group relative flex flex-1 flex-col p-4 border border-fd-border bg-fd-card hover:border-red-500/40 transition-colors md:rounded-none">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-mono text-xs text-red-500/80 tabular-nums">{p.step}</span>
+                    <span className="text-sm font-semibold">{p.name}</span>
                   </div>
-                ))}
+                  <p className="text-xs text-fd-muted-foreground leading-relaxed">{p.desc}</p>
+                </div>
+                {i < pipeline.length - 1 && (
+                  <div className="flex items-center justify-center md:px-1 py-1 md:py-0 text-red-500/40 rotate-90 md:rotate-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </div>
+                )}
               </div>
-              <div className="mt-2 text-neutral-600 select-none">
-                <span></span>
-                <span className="text-neutral-500">{layers.length} directories, 0 files</span>
-              </div>
-            </div>
+            ))}
+          </div>
+
+          {/* Loop indicator */}
+          <div className="mt-4 flex items-center gap-2 px-1 font-mono text-[11px] text-fd-muted-foreground/60">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 text-red-500/60">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+              <path d="M8 16H3v5" />
+            </svg>
+            <span>loops until objective reached · max 30 steps · doom-loop guard at 3</span>
           </div>
         </div>
       </section>
