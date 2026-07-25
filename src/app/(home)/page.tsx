@@ -164,22 +164,32 @@ export default function HomePage() {
             autonomously, observes output, reasons, and iterates until the objective is reached.
           </p>
 
-          {/* Install command block */}
-          <div className="group relative w-full max-w-md mb-8">
-            <div className="flex items-center gap-2 px-4 py-1 border border-b-0 border-fd-border bg-fd-card/60 rounded-t-md">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
-              <span className="ml-2 font-mono text-[11px] text-fd-muted-foreground/60">bash</span>
+          {/* Install command block — BackTrack/konsole style, no mac dots */}
+          <div className="w-full max-w-md mb-8">
+            <div className="flex items-center border border-b-0 border-red-500/40 bg-[#1a1a1a] px-3 py-1.5">
+              <span className="font-mono text-[11px] text-red-400/90 tracking-wide">root@z2e:~</span>
+              <span className="mx-auto font-mono text-[10px] text-neutral-500">z2e-terminal — bash</span>
+              <span className="w-2 h-2 bg-red-500/80" />
             </div>
-            <code className="block px-4 py-3 border border-fd-border bg-fd-card/40 rounded-b-md font-mono text-sm text-left overflow-x-auto">
-              <span className="text-fd-muted-foreground/50 select-none">$ </span>
-              <span className="text-red-400">export</span>{' '}
-              <span className="text-fd-foreground">AI_GATEWAY_API_KEY</span>
-              <span className="text-fd-muted-foreground">=</span>
-              <span className="text-green-400">&quot;...&quot;</span>
-              <span className="text-fd-muted-foreground/50"> && </span>
-              <span className="text-fd-foreground">just run</span>
+            <code className="block px-4 py-3 border border-red-500/40 bg-[#0d0d0d] font-mono text-sm text-left overflow-x-auto text-neutral-300">
+              <div>
+                <span className="text-red-400 select-none">root@z2e</span>
+                <span className="text-neutral-600">:</span>
+                <span className="text-blue-400">~</span>
+                <span className="text-neutral-600"># </span>
+                <span className="text-neutral-200">export </span>
+                <span className="text-amber-300">AI_GATEWAY_API_KEY</span>
+                <span className="text-neutral-400">=</span>
+                <span className="text-green-400">&quot;...&quot;</span>
+              </div>
+              <div>
+                <span className="text-red-400 select-none">root@z2e</span>
+                <span className="text-neutral-600">:</span>
+                <span className="text-blue-400">~</span>
+                <span className="text-neutral-600"># </span>
+                <span className="text-neutral-200">just run</span>
+                <span className="inline-block w-2 h-4 ml-1 bg-red-400/80 align-middle animate-pulse" />
+              </div>
             </code>
           </div>
 
@@ -220,37 +230,43 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Stats Bar — terminal readout style */}
+      {/* Stats — terminal status readout */}
       <section className="py-10 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-2 mb-3 px-1 font-mono text-[11px] text-fd-muted-foreground/50">
-            <span className="text-red-500/70">●</span>
-            <span>runtime · config</span>
+          <div className="flex items-center gap-2 mb-2 px-1 font-mono text-[11px]">
+            <span className="text-red-500">root@z2e:~#</span>
+            <span className="text-fd-muted-foreground/70">cat config.json</span>
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-px border border-fd-border bg-fd-border overflow-hidden">
-            {stats.map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center justify-center py-5 bg-fd-card">
-                <div className="font-mono text-xl font-medium tabular-nums">{stat.value}</div>
-                <div className="font-mono text-[10px] text-fd-muted-foreground/60 mt-1">{stat.label}</div>
-              </div>
-            ))}
+          <div className="border border-fd-border bg-fd-card overflow-hidden font-mono">
+            <div className="px-4 py-1.5 border-b border-fd-border bg-fd-background/50 text-[11px] text-fd-muted-foreground/60 flex items-center justify-between">
+              <span>{'{'} config.json {'}'}</span>
+              <span className="text-red-500/60">read-only</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-x divide-fd-border">
+              {stats.map((stat) => (
+                <div key={stat.label} className="flex flex-col px-4 py-4">
+                  <span className="text-[10px] text-fd-muted-foreground/50">{stat.label}:</span>
+                  <span className="text-lg text-fd-foreground tabular-nums mt-0.5">{stat.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Video/Preview Section */}
+      {/* Video */}
       <section className="pb-16 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
         <div className="max-w-3xl mx-auto">
           <YouTubePlayer videoId="2txyf_5lsOo" title="Z2E Demo" />
         </div>
       </section>
 
-      {/* Feature Cards */}
-      <section className="py-16 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
+      {/* Features */}
+      <section className="py-12 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
         <div className="max-w-3xl mx-auto">
-          <div className="mb-8">
-            <span className="font-mono text-xs text-red-500/70">{'// capabilities'}</span>
-            <h2 className="text-3xl font-semibold mt-1 font-[family-name:var(--font-eb-garamond)]">Features</h2>
+          <div className="mb-8 px-1">
+            <div className="font-mono text-[11px] text-red-500 mb-1">root@z2e:~# ls capabilities/</div>
+            <h2 className="text-3xl font-semibold font-[family-name:var(--font-eb-garamond)]">Features</h2>
             <p className="text-fd-muted-foreground mt-2 text-sm">
               Everything you need for autonomous security operations.
             </p>
@@ -259,10 +275,10 @@ export default function HomePage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group relative flex flex-col p-5 border border-fd-border bg-fd-card hover:border-red-500/30 transition-colors duration-200"
+                className="group relative flex flex-col p-5 border border-fd-border bg-fd-card hover:border-red-500/40 hover:bg-fd-card/60 transition-colors duration-200"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-9 h-9 flex items-center justify-center border border-fd-border bg-fd-background text-fd-muted-foreground group-hover:text-red-500 group-hover:border-red-500/30 transition-colors">
+                  <div className="w-9 h-9 flex items-center justify-center border border-fd-border bg-fd-background text-fd-muted-foreground group-hover:text-red-500 group-hover:border-red-500/40 transition-colors">
                     {feature.icon}
                   </div>
                   <span className="font-mono text-[10px] text-fd-muted-foreground/40 uppercase tracking-wider">
@@ -277,125 +293,119 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Architecture Flow */}
-      <section className="py-16 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
+      {/* Architecture — tree command output */}
+      <section className="py-12 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
         <div className="max-w-3xl mx-auto">
-          <div className="mb-8 text-center">
-            <span className="font-mono text-xs text-red-500/70">{'// tree'}</span>
-            <h2 className="text-3xl font-semibold mt-1 font-[family-name:var(--font-eb-garamond)]">Architecture</h2>
+          <div className="mb-6 px-1">
+            <div className="font-mono text-[11px] text-red-500 mb-1">root@z2e:~# tree internal/ -L 1</div>
+            <h2 className="text-3xl font-semibold font-[family-name:var(--font-eb-garamond)]">Architecture</h2>
             <p className="text-fd-muted-foreground mt-2 text-sm">
               ~4k LOC of Go across 5 clean layers.
             </p>
           </div>
 
-          {/* Data flow — desktop */}
-          <div className="hidden md:flex items-stretch justify-center gap-0 mb-4">
-            {layers.map((layer, i) => (
-              <div key={layer.name} className="flex items-stretch">
-                <div className="flex flex-col items-center justify-center px-4 py-6 border border-fd-border bg-fd-card min-w-[110px]">
-                  <div className="text-sm font-semibold">{layer.name}</div>
-                  <div className="text-xs text-fd-muted-foreground/80 mt-0.5">{layer.desc}</div>
-                  <div className="font-mono text-[10px] text-red-500/50 mt-2">{layer.file}</div>
-                </div>
-                {i < layers.length - 1 && (
-                  <div className="flex items-center px-1.5 text-fd-muted-foreground/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
-                      <path d="M5 12h14" />
-                      <path d="m12 5 7 7-7 7" />
-                    </svg>
+          {/* Terminal tree output */}
+          <div className="border border-fd-border bg-[#0d0d0d] dark:bg-[#0d0d0d] overflow-hidden">
+            <div className="px-4 py-1.5 border-b border-neutral-800 bg-[#1a1a1a] flex items-center gap-2">
+              <span className="w-2 h-2 bg-red-500/80" />
+              <span className="font-mono text-[11px] text-neutral-400">z2e-terminal — internal/</span>
+            </div>
+            <div className="p-5 font-mono text-sm">
+              <div className="space-y-1">
+                {layers.map((layer, i) => (
+                  <div key={layer.name} className="flex items-center gap-2 text-neutral-300">
+                    {i === layers.length - 1 ? (
+                      <span className="text-neutral-600 select-none">└── </span>
+                    ) : (
+                      <span className="text-neutral-600 select-none">├── </span>
+                    )}
+                    <span className="text-blue-400">{layer.file}</span>
+                    <span className="text-neutral-600"># {layer.name} · {layer.desc}</span>
                   </div>
-                )}
+                ))}
               </div>
-            ))}
-          </div>
-
-          {/* Mobile stack */}
-          <div className="flex flex-col md:hidden gap-2">
-            {layers.map((layer, i) => (
-              <div key={layer.name} className="flex flex-col items-center">
-                <div className="w-full flex items-center justify-between px-4 py-3 border border-fd-border bg-fd-card">
-                  <div>
-                    <div className="text-sm font-semibold">{layer.name}</div>
-                    <div className="text-xs text-fd-muted-foreground/80">{layer.desc}</div>
-                  </div>
-                  <div className="font-mono text-[10px] text-red-500/50">{layer.file}</div>
-                </div>
-                {i < layers.length - 1 && (
-                  <div className="py-0.5 text-fd-muted-foreground/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 rotate-90">
-                      <path d="M5 12h14" />
-                      <path d="m12 5 7 7-7 7" />
-                    </svg>
-                  </div>
-                )}
+              <div className="mt-2 text-neutral-600 select-none">
+                <span></span>
+                <span className="text-neutral-500">{layers.length} directories, 0 files</span>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Terminal Demo */}
-      <section className="py-16 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
-        <div className="max-w-3xl mx-auto text-center">
-          <span className="font-mono text-xs text-red-500/70">{'// live'}</span>
-          <h2 className="text-3xl font-semibold mt-1 mb-2 font-[family-name:var(--font-eb-garamond)]">Autonomous agent in action</h2>
-          <p className="text-fd-muted-foreground mb-8 text-sm">
-            Watch the agent plan, execute, and iterate on CTF challenges.
-          </p>
+      <section className="py-12 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-6 px-1">
+            <div className="font-mono text-[11px] text-red-500 mb-1">root@z2e:~# ./z2e-terminal --demo</div>
+            <h2 className="text-3xl font-semibold font-[family-name:var(--font-eb-garamond)]">Autonomous agent in action</h2>
+            <p className="text-fd-muted-foreground mt-2 text-sm">
+              Watch the agent plan, execute, and iterate on CTF challenges.
+            </p>
+          </div>
           <TerminalDemo />
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
-        <div className="max-w-xl mx-auto text-center border border-fd-border bg-fd-card/50 p-10">
-          <Image
-            src="/logo/logo-sm.png"
-            alt="Z²ᴱ"
-            width={48}
-            height={48}
-            className="mx-auto mb-4 opacity-90"
-          />
-          <h2 className="text-3xl font-semibold mb-3 font-[family-name:var(--font-eb-garamond)]">Ready to hunt</h2>
-          <p className="text-fd-muted-foreground mb-6 text-sm">
-            Clone the repo, set your API key, run your first mission.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link
-              href="/docs/getting-started/installation"
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-fd-foreground text-fd-background font-medium text-sm hover:opacity-90 transition-opacity"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" x2="12" y1="15" y2="3" />
-              </svg>
-              Installation Guide
-            </Link>
-            <Link
-              href="/docs/architecture/agent-loop"
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 border border-fd-border text-fd-foreground font-medium text-sm hover:bg-fd-accent transition-colors"
-            >
-              Architecture Docs
-            </Link>
+      {/* CTA — terminal session end */}
+      <section className="py-16 px-4 mx-auto w-full max-w-[var(--fd-layout-width)]">
+        <div className="max-w-xl mx-auto">
+          <div className="border border-red-500/40 bg-[#0d0d0d] overflow-hidden">
+            <div className="px-4 py-1.5 border-b border-red-500/30 bg-[#1a1a1a] flex items-center gap-2">
+              <span className="w-2 h-2 bg-red-500/80" />
+              <span className="font-mono text-[11px] text-red-400/90">root@z2e:~ — session</span>
+            </div>
+            <div className="p-8 text-center">
+              <Image
+                src="/logo/logo-sm.png"
+                alt="Z²ᴱ"
+                width={56}
+                height={56}
+                className="mx-auto mb-4 opacity-90"
+              />
+              <h2 className="text-2xl font-semibold mb-2 font-[family-name:var(--font-eb-garamond)]">Ready to hunt</h2>
+              <p className="text-neutral-400 mb-6 text-sm font-mono">
+                <span className="text-neutral-600"># </span>
+                clone, set key, run first mission
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <Link
+                  href="/docs/getting-started/installation"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2 bg-red-500/90 hover:bg-red-500 text-white font-medium text-sm transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" x2="12" y1="15" y2="3" />
+                  </svg>
+                  Installation Guide
+                </Link>
+                <Link
+                  href="/docs/architecture/agent-loop"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2 border border-neutral-700 text-neutral-200 font-medium text-sm hover:border-red-500/40 hover:text-red-400 transition-colors"
+                >
+                  Architecture Docs
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <footer className="py-8 px-4 border-t border-fd-border">
-        <div className="mx-auto max-w-[var(--fd-layout-width)] flex flex-col sm:flex-row items-center justify-between gap-3">
+      <footer className="py-6 px-4 border-t border-fd-border">
+        <div className="mx-auto max-w-[var(--fd-layout-width)] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-[11px]">
           <div className="flex items-center gap-2">
             <Image
               src="/logo/logo-sm.png"
               alt="Z²ᴱ"
-              width={20}
-              height={20}
+              width={18}
+              height={18}
             />
-            <span className="font-mono text-xs text-fd-muted-foreground">
-              z2e-terminal
-            </span>
+            <span className="text-fd-muted-foreground">z2e-terminal</span>
+            <span className="text-fd-muted-foreground/40">·</span>
+            <span className="text-fd-muted-foreground/60">go + bubble tea</span>
           </div>
-          <p className="font-mono text-xs text-fd-muted-foreground/60">
+          <p className="text-fd-muted-foreground/50">
             &copy; {new Date().getFullYear()} Z2E-Agent Team
           </p>
         </div>
