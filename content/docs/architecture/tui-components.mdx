@@ -3,26 +3,16 @@ title: TUI Architecture
 description: Bubble Tea component tree and rendering pipeline.
 ---
 
-The TUI is built with the **Bubble Tea** framework (`github.com/charmbracelet/bubbletea`) and lives in `internal/ui/model.go` (~1,360 LOC).
+The TUI is built with the **Bubble Tea** framework (`github.com/charmbracelet/bubbletea`) and lives in `internal/ui/model.go` (~1,333 LOC).
 
 ## Component Tree
 
-```text
-├── AppModel
-│   ├── Transcript (viewport.Model)
-│   │   └── Rendered markdown (glamour)
-│   ├── Composer (textarea.Model)
-│   │   └── Input area + send on Enter
-│   ├── StatusBar (lipgloss)
-│   │   ├── Model name
-│   │   ├── Connection state
-│   │   ├── Step counter
-│   │   └── Mode indicator
-│   ├── ModelPicker (list.Model)
-│   │   └── /model command overlay
-│   └── RuntimeBridge (goroutine)
-│       └── Stream events → tea.Cmd
-```
+- **AppModel**
+  - **Transcript** (viewport.Model) - rendered markdown via glamour
+  - **Composer** (textarea.Model) - input area, sends on Enter
+  - **StatusBar** (lipgloss) - model name, connection state, step counter, mode
+  - **ModelPicker** (list.Model) - `/model` command overlay
+  - **RuntimeBridge** (goroutine) - stream events to `tea.Cmd`
 
 ## Core Components
 
@@ -43,29 +33,29 @@ The TUI is built with the **Bubble Tea** framework (`github.com/charmbracelet/bu
 ### Status Bar
 - Custom lipgloss-rendered bar at the bottom
 - Shows:
-  - Current model name (e.g., `openai/gpt-5.2`)
+  - Current model name (e.g., `opencode-go/deepseek-v4-pro`)
   - Connection state (connected/connecting/error)
   - Current step number (e.g., `Step 3/30`)
   - Mode indicator (normal/demo)
 
 ### Model Picker
 - Triggered by typing `/model` in the composer
-- Shows a list of available models from the catalog
-- Selection updates the active model at runtime
-- Returns to normal mode after selection
+- Shows available models from the catalog, grouped by provider
+- `/model <provider>/<model>` switches directly
+- `/model <provider>` lists that provider's models
+- Selection updates the active model at runtime (no restart)
 
 ## Streaming Pipeline
 
-SSE chunks travel through a 7-stage pipeline:
+SSE chunks travel through a 6-stage pipeline:
 
 ```text
 SSE Chunk → Gateway Client → Stream Bridge → TUI Update → Lipgloss Render → Terminal
-                     ↘ Agent Runtime (tool calls) ↗
 ```
 
-1. **SSE Chunk**: Raw `data:` lines from the AI Gateway
+1. **SSE Chunk**: Raw `data:` lines from the OpenCode Go gateway
 2. **Gateway Client**: Parses SSE, extracts text deltas and tool call fragments
-3. **Stream Bridge**: (`stream.go`) Translates gateway events into `tea.Msg` types
+3. **Stream Bridge** (`stream.go`): Translates gateway events into `tea.Msg` types
 4. **TUI Update**: `AppModel.Update()` handles each message type
 5. **Lipgloss Render**: `AppModel.View()` produces the final string
 6. **Terminal**: Bubble Tea writes to the terminal via the alt screen

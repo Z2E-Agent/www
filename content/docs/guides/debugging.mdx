@@ -3,7 +3,7 @@ title: Debugging & Observability
 description: Session snapshots, tracing, and troubleshooting.
 ---
 
-The agent includes built-in observability through session snapshots and per-step trace files. The debug system lives in `internal/agent/session_debug.go` (~237 LOC).
+The agent writes session snapshots and per-step trace files for observability. The debug system lives in `internal/agent/session_debug.go` (~237 LOC).
 
 ## Session Snapshot
 
@@ -15,13 +15,14 @@ The file is updated atomically (write to temp file, rename) to prevent partial r
 
 ```json
 {
-  "version": "v0.2.2",
-  "started_at": "2026-05-29T15:48:00Z",
+  "schema": "z2e.runtime_session.v1",
+  "version": "v0.2.4",
+  "started_at": "2026-07-28T15:48:00Z",
   "elapsed_seconds": 142.3,
   "step": 5,
   "max_steps": 30,
   "status": "running",
-  "model": "openai/gpt-5.2",
+  "model": "opencode-go/deepseek-v4-pro",
   "turns": [
     {
       "role": "assistant",
@@ -45,9 +46,11 @@ The file is updated atomically (write to temp file, rename) to prevent partial r
 
 Each step is also written to a timestamped file:
 
-**Path**: `/tmp/z2e-terminal/<YYYY-MM-DD>/<HH-MM-SS>.json`
+**Path**: `/tmp/z2e-terminal/<YYYY-MM-DD>/<YYYY-MM-DD_HH-MM-SS>.json`
 
-These files contain the same data as the live snapshot but are preserved across steps, giving a complete history of the session.
+These files contain the request payload, runtime session, and debug snapshot. Envelope schemas: `z2e.runtime_session.v1`, `z2e.runtime_trace.v1`, `z2e.tool_observation.v1`.
+
+These are gitignored (under `*.json`) and written to the system temp dir, not the repo.
 
 ## Key Fields
 
@@ -69,12 +72,12 @@ These files contain the same data as the live snapshot but are preserved across 
 1. Check the `.env` file has a valid `AI_GATEWAY_API_KEY`
 2. Verify network connectivity to the gateway endpoint
 3. Check `/tmp/z2e-terminal/session.json` for error messages
-4. Run with `./main` directly (not `just run`) to see stderr
+4. Run with `go run ./cmd/z2e-terminal` directly (not `just run`) to see stderr
 
 ### No Output / Empty Responses
 
-- Check the model is responding; try a different model via `/model`
-- Verify the model supports tool calling (chat models only)
+- Try a different model via `/model`
+- Verify the model supports tool calling
 - Check gateway logs for 4xx/5xx responses
 
 ### Commands Timing Out

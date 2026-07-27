@@ -1,6 +1,6 @@
 ---
 title: Agent Loop
-description: How the autonomous Plan -> Execute -> Observe -> Replan cycle works.
+description: How the autonomous Plan → Execute → Observe → Replan cycle works.
 ---
 
 The agent runtime (`internal/agent/runtime.go`) drives a synchronous step loop. Each step is one LLM turn plus optional tool executions.
@@ -8,40 +8,26 @@ The agent runtime (`internal/agent/runtime.go`) drives a synchronous step loop. 
 ## Loop Overview
 
 ```text
-     ┌──────────────────────────────────┐
-     │           Step Loop              │
-     │         (max 30 steps)           │
-     │                                  │
-     │  ┌─────────┐    ┌──────────┐    │
-     │  │  LLM    │───>│ Aggregate│    │
-     │  │  Turn   │    │ tool_call│    │
-     │  └────┬────┘    └────┬─────┘    │
-     │       │              │          │
-     │  ┌────▼────┐   ┌────▼─────┐    │
-     │  │  Emit   │   │ Execute  │    │
-     │  │ response│   │ (bash)   │    │
-     │  └─────────┘   └────┬─────┘    │
-     │                     │          │
-     │              ┌──────▼──────┐   │
-     │              │  Observe   │   │
-     │              │ & Replan   │   │
-     │              └──────┬──────┘   │
-     │                     │          │
-     └─────────────────────┼──────────┘
-                           │
-                    ┌──────▼──────┐
-                    │  Terminal   │
-                    │  Conditions │
-                    └─────────────┘
+Step Loop (max 30 steps)
+    │
+    1. LLM Turn ──→ 2. Aggregate tool_calls
+    │                        │
+    3. Emit response    4. Execute (bash -lc)
+                             │
+                    5. Observe & Replan ──→ back to step 1
+                             │
+                        ┌────┴────┐
+                     continue?   stop
+                                (see Terminal Conditions)
 ```
 
 ## Step-by-Step
 
 ### 1. LLM Turn
-- Sends the full conversation history to the model
+- Sends the full conversation history (system prompt + messages) to the model
 - Uses SSE streaming via `internal/llm/gateway/client.go`
-- Streams response chunks directly to the TUI in real-time
-- Up to 3 retries with exponential backoff on failure
+- Streams response chunks to the TUI in real-time
+- Up to 3 total attempts per step (initial + 2 retries) with linear backoff
 - Tracks token usage per turn
 
 ### 2. Aggregate Tool Calls
@@ -73,23 +59,24 @@ The loop stops when any of these are met:
 
 | Condition | Threshold | File |
 |-----------|-----------|------|
-| Final answer | Model emits final answer marker | `runtime.go` |
+| Final answer | Model emits text with no tool calls | `runtime.go` |
 | Max steps | 30 | `runtime.go` |
 | Doom-loop | 3 identical command signatures | `runtime.go` |
 | Empty turns | 2 consecutive empty responses | `runtime.go` |
+| Interactive command | Agent detects a TTY-blocking command | `runtime.go` |
 | Error | Unrecoverable LLM or execution error | `runtime.go` |
 
 ## Doom-Loop Protection
 
-The agent tracks a rolling window of command signatures (normalized command strings). If 3 consecutive tool calls produce identical signatures, the loop terminates. This prevents the model from repeating the same failing command indefinitely.
+The agent tracks command signatures (normalized name + raw arguments). If 3 consecutive tool calls produce identical signatures, the loop skips that call and warns the model. This prevents the agent from repeating the same failing command indefinitely.
 
 ## Empty-Turn Detection
 
-If the model returns content with no tool calls and no substantive text for 2 consecutive turns, the loop terminates. This catches cases where the model enters a non-responsive state.
+If the model returns content with no tool calls and no substantive text for 2 consecutive turns, the loop terminates with a fallback message. This catches cases where the model enters a non-responsive state.
 
 ## Retry Logic
 
-LLM calls retry on failure with linear backoff:
+LLM calls retry on failure with linear backoff at the runtime level:
 
 | Attempt | Delay |
 |---------|-------|
@@ -97,4 +84,4 @@ LLM calls retry on failure with linear backoff:
 | 2nd | 2s |
 | 3rd | 4s |
 
-Each retry re-sends the complete conversation history. Only LLM gateway errors trigger retries; tool execution errors are reported back to the model as observations.
+The gateway HTTP client (`client.go`) adds a second retry layer: up to 3 retries on HTTP 429/500/502/503/504 and network errors, with exponential backoff and jitter. Only transient errors trigger retries; tool execution errors are reported back to the model as observations.

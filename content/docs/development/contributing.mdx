@@ -7,7 +7,7 @@ description: How to contribute to z2e-terminal development.
 
 ```
 z2e-terminal/
-├── cmd/z2e-terminal/     # Entry point (main.go, ~41 LOC)
+├── cmd/z2e-terminal/     # Entry point (main.go, ~20 LOC)
 ├── internal/
 │   ├── agent/            # Agent runtime, tools, policy, debug
 │   │   ├── runtime.go    # Core agent loop (~303 LOC)
@@ -17,75 +17,83 @@ z2e-terminal/
 │   │   ├── session_debug.go  # Debug snapshots (~237 LOC)
 │   │   ├── types.go      # Shared types (~53 LOC)
 │   │   └── prompts/      # Embedded system prompt
-│   ├── config/           # Env config loader
+│   ├── config/           # Env config loader + tests
 │   ├── executor/         # Shell command runner (~141 LOC)
-│   ├── llm/gateway/      # SSE streaming client + model catalog
-│   └── ui/               # Bubble Tea TUI (~1,360 LOC)
-├── docs/diagrams/        # Architecture diagram prompts (11 files)
-├── Analysis/             # Deep analysis reports
-└── Diagram/              # AI-generated diagram prompts
+│   ├── llm/gateway/      # SSE streaming client + model catalog + tests
+│   └── ui/               # Bubble Tea TUI (~1,333 LOC)
+├── justfile              # Canonical build/test recipes
+├── VERSION               # Plain-text version (read by justfile)
+└── .env.example          # Environment template
 ```
 
-Total: ~4,000 LOC of Go across a clean 5-layer architecture.
+Total: ~3,200 LOC of Go across a 5-layer architecture.
 
 ## Build & Test
 
+`just` recipes are canonical. Raw Go equivalents work but lack version ldflags and pre-commit ordering.
+
 ```bash
-# Build
-just build
-go build -o main ./cmd/z2e-terminal/
+# Full pre-commit check (fmt → vet → test → build)
+just check
 
-# Format
-just fmt
-go fmt ./...
-
-# Vet
-just vet
-go vet ./...
-
-# Test (currently 0 tests exist — contributions welcome!)
-just test
-go test ./...
+# Individual recipes
+just build       # build to ./bin/z2e-terminal with version ldflags
+just fmt          # gofmt -w ./cmd ./internal
+just vet          # go vet ./cmd/... ./internal/...
+just test         # go test ./cmd/... ./internal/...
 ```
+
+Note: `gofmt` scope is `./cmd ./internal`, not `./...`.
 
 ## Pre-commit Checklist
 
-1. `go fmt ./...` - Format all code
-2. `go vet ./...` - Static analysis
-3. `go build ./...` - Ensure compilation
-4. `just run` - Manual smoke test (verify TUI starts)
+1. `just fmt` — Format code (`gofmt -w ./cmd ./internal`)
+2. `just vet` — Static analysis
+3. `just test` — Run tests
+4. `just build` — Ensure compilation
+5. `just run` — Manual smoke test
 
 ## Code Style
 
-- Follow standard Go conventions (`gofmt`)
-- Error handling: prefer early returns, wrap errors with context
-- No panics in production code paths (TUI model can recover gracefully)
+- `gofmt` only — do not hand-align spacing
+- Error handling: early returns, wrap errors with `%w`
+- Prefer typed structs over `map[string]any` for internal logic
+- Use JSON tags only on serialized payloads
 - Bubble Tea: `Model` struct with `Init()`, `Update()`, `View()` pattern
 - Agent runtime: explicit step loop with guard checks, no goroutine races
+- Never leak `AI_GATEWAY_API_KEY`, `Authorization` headers, or raw tokens into traces or observations
 
 ## Key Design Decisions
 
-- **Pure pass-through policy**: All commands pass through without restriction (empty commands blocked). No sandboxing.
-- **SSE streaming**: LLM responses streamed character-by-character through a 7-stage pipeline.
+- **Pure pass-through policy**: No deny-list, no allowlist. The system prompt guides behavior.
+- **SSE streaming**: LLM responses streamed through a 6-stage pipeline to the terminal.
 - **No goroutine sharing**: All mutable state flows through Bubble Tea's `Cmd`/`Msg` channel.
-- **Doom-loop protection**: Detects 3+ identical command signatures and terminates.
+- **Single executor path**: `bash -lc` is the only audited shell-crossing point.
+
+## Tests
+
+Two test files currently exist:
+
+- `internal/config/gateway_test.go`
+- `internal/llm/gateway/client_test.go`
+
+Tests should be deterministic (no timing-sensitive flakes) and placed alongside the package they cover. Use table-driven tests with `t.Parallel()` for independent cases.
+
+## Version Sync
+
+When bumping the version, update all of these in the same commit:
+
+- `VERSION` (plain text, e.g. `v0.2.4`)
+- `internal/ui/model.go` — the `appVersion` constant (shown in TUI title bar)
+- `README.md` — the "Current version" section
+
+Use short, one-line commit messages for version bumps.
 
 ## Documentation
 
 - Update docs in `www/content/docs/` (this Fumadocs site)
-- Diagram prompts live in `docs/diagrams/` — 11 files covering architecture, flows, deployment
-- Architecture analysis in `Analysis/ClaudeCode_vs_Z2E_Deep_Analysis.md`
-
-## Open Issues
-
-- **No automated tests** — Zero `_test.go` files exist
-- **Documentation-to-code ratio** is high (~3,000 LOC docs vs ~4,000 LOC code)
-- **model.go** dominates at 1,360 LOC — consider splitting
-- **No HTTP client timeout** on LLM gateway requests
-- **Stale binary** (`main`, ~20MB) in repo root
-- **`go 1.26.1`** in go.mod is a placeholder (no such Go release exists)
+- `AGENTS.md` in the repo root documents architecture, guards, and conventions for agentic contributors
 
 ## Contact
 
-- **Email:** contact@z2e.team
 - **GitHub:** [Z2E-Agent](https://github.com/Z2E-Agent)

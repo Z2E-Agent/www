@@ -11,32 +11,39 @@ The agent uses a tool-calling interface to execute shell commands on the host sy
 |-----------|-------|-------------|
 | `bash` | `run_command` | Execute a shell command via `bash -lc` |
 
-Both names map to the same handler (backward compatibility).
+Both names map to the same handler. The tool schema requires a `description` field: the model must state its intent for every call.
 
 ## Execution Flow
 
 ```text
-LLM emits tool_call → Policy Check → Runner → Output → Observation
-                                            ↓
-                                      64KB truncation
-                                         + timeout
+LLM tool_call → Policy Check (non-empty?) → Runner (bash -lc) → Output (64KB cap + timeout) → Observation
 ```
 
 1. Agent runtime extracts tool name and arguments from the LLM response
-2. **Policy check** (`internal/agent/policy.go`): validates the command
+2. **Policy check** (`internal/agent/policy.go`): validates the command is non-empty
 3. **Runner** (`internal/executor/runner.go`): executes via `bash -lc`
 4. Output is captured, truncated to 64KB, and wrapped in an observation envelope
 5. Observation is appended to chat history for the next LLM turn
 
 ## Command Policy
 
-The current policy is **pure pass-through**:
+The policy is **pure pass-through** (`internal/agent/policy.go`, 19 LOC):
 
-- All commands are allowed (no blocklist, no allowlist)
-- Only empty commands are blocked
+- No hardcoded deny-list
+- No allowlist
 - No sandboxing, chroot, namespace isolation, or seccomp
+- Only empty commands are blocked
 
-This is suitable for controlled/authorized environments. Production deployments should implement additional restrictions.
+The system prompt guides behavior. Code does not second-guess commands.
+
+## Interactive Command Blocking
+
+A heuristic in `tools.go` (`looksInteractiveCommand`) blocks bare interactive commands that would hang the agent on a TTY prompt:
+
+- `ssh host`, `mysql`, `psql`, `mongo`/`mongosh`, `sqlite3`, `sftp`, `ftp`, `telnet`, `passwd`
+- Any `read -p` or `--askpass`
+
+These are allowed when batch-mode flags are present (`-e`, `-c`, `--eval`, `<<`, `<`, or a remote command after the host). This is a UX guard to prevent the agent from hanging, not a security isolation control.
 
 ## Runner Details
 
@@ -49,9 +56,8 @@ func Run(ctx context.Context, command string, timeout time.Duration) Result
 - Default timeout: 60 seconds
 - Maximum timeout: 10 minutes
 - Output capture: stdout + stderr combined
-- Output truncation: 64KB max
-- Interactive command heuristic detection
-- Exit code captured in result
+- Output truncation: 64KB max (truncation marked in observation)
+- Exit code captured in result; 124 on timeout
 
 ## Observation Schema
 
@@ -60,7 +66,7 @@ Tool results are returned as a structured JSON envelope (`schema: z2e.tool_obser
 ```json
 {
   "schema": "z2e.tool_observation.v1",
-  "timestamp": "2026-05-29T15:48:00Z",
+  "timestamp": "2026-07-28T15:48:00Z",
   "session": {
     "started_at": "...",
     "steps": 5,
@@ -89,13 +95,13 @@ The `output` field is compacted to 6000 characters for the LLM prompt. The raw c
 ## Safety Guards
 
 ### Doom-Loop Detection
-3 consecutive identical command signatures terminate the agent loop.
+3 consecutive identical command signatures (name + raw arguments) cause the loop to skip that call and warn the model.
 
 ### Output Overflow
 Output beyond 64KB in the raw capture is truncated. The LLM-facing `output` field is further compacted to 6000 characters.
 
 ### Timeout Enforcement
-Commands exceeding the timeout are killed via context cancellation. The observation includes the partial output captured before termination.
+Commands exceeding the timeout are killed via context cancellation. The observation includes the partial output captured before termination, with exit code 124.
 
 ### Empty Command Rejection
 Empty or whitespace-only commands are rejected at the policy level.

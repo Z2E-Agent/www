@@ -6,33 +6,20 @@ description: Autonomous AI agent TUI for penetration testing and CTF challenges.
 z2e-terminal is an autonomous AI agent TUI built with **Go** and **Bubble Tea**. It accepts natural-language missions, plans and executes multi-step CLI actions autonomously, observes output, reasons, and iterates until the objective is reached or runtime limits are hit.
 
 ```text
-                           ┌─────────────┐
-                           │    User      │
-                           │   Input      │
-                           └──────┬──────┘
-                                  │
-                    ┌─────────────▼─────────────┐
-                    │        UI Layer           │
-                    │   (Bubble Tea TUI)         │
-                    │  model.go / stream.go     │
-                    └─────────────┬─────────────┘
-                                  │
-                    ┌─────────────▼─────────────┐
-                    │     Agent Runtime         │
-                    │  Plan -> Execute -> Observe│
-                    │  -> Replan (up to 30 steps)│
-                    └──┬──────────┬─────────────┘
-                       │          │
-          ┌────────────▼──┐  ┌────▼────────────┐
-          │  LLM Gateway  │  │    Executor     │
-          │  (SSE stream) │  │  (bash -lc)     │
-          │  client.go    │  │  runner.go      │
-          └───────────────┘  └─────────────────┘
+User Input
+    ↓
+UI Layer (Bubble Tea TUI)  ←  model.go / stream.go
+    ↓
+Agent Runtime  ←  Plan → Execute → Observe → Replan (up to 30 steps)
+    ↓                    ↓
+LLM Gateway            Executor
+(SSE streaming)        (bash -lc)
+client.go              runner.go
 ```
 
 ## Current Version
 
-v0.2.2
+v0.2.4
 
 ## Core Architecture
 
@@ -40,15 +27,15 @@ v0.2.2
 |-------|---------|----------------|
 | TUI | `internal/ui/` | Terminal UI: transcript, composer, status bar, model picker, streaming |
 | Agent | `internal/agent/` | Core loop: LLM turns, tool execution, policy, debug snapshots |
-| LLM | `internal/llm/gateway/` | SSE streaming client, 250+ model catalog, retry with backoff |
+| LLM | `internal/llm/gateway/` | OpenCode Go SSE streaming client, model catalog, retry with backoff |
 | Executor | `internal/executor/` | `bash -lc` shell runner with timeout, output capture, truncation |
 | Config | `internal/config/` | Environment config loader for API keys and model settings |
 
 ## Agent Loop
 
-The core loop is Plan -> Execute -> Observe -> Replan:
+The core loop is Plan → Execute → Observe → Replan:
 
-1. **LLM Turn**: Send conversation to the model via SSE streaming (up to 3 retries)
+1. **LLM Turn**: Send conversation to the model via SSE streaming (up to 3 total attempts per step)
 2. **Aggregate**: Collect tool_calls from stream fragments
 3. **Emit**: Stream assistant response to TUI
 4. **Execute**: Run each tool call via `bash -lc`
@@ -66,32 +53,41 @@ The core loop is Plan -> Execute -> Observe -> Replan:
 
 ## Features
 
-- **Autonomous agent loop** - Plan -> Execute -> Observe -> Replan
-- **Tool execution** - bash / run_command tools (pure pass-through policy)
-- **Streaming output** - Real-time SSE streaming from AI Gateway
-- **Markdown rendering** - glamour for terminal markdown display
-- **Runtime model switching** - `/model` command
-- **LLM retry with backoff** - Up to 2 retries per step
-- **CTF-oriented system prompt** - Built-in security testing persona
-- **Session debug snapshots** - `/tmp/z2e-terminal/session.json`
+- **Autonomous agent loop**: Plan → Execute → Observe → Replan
+- **Tool execution**: bash / run_command tools (pure pass-through policy)
+- **Streaming output**: Real-time SSE streaming from OpenCode Go gateway
+- **Markdown rendering**: glamour for terminal markdown display
+- **Runtime model switching**: `/model` command
+- **LLM retry with backoff**: Up to 2 retries per step, exponential backoff with jitter at the gateway level
+- **Security-oriented system prompt**: Built-in pentesting and CTF persona
+- **Session debug snapshots**: `/tmp/z2e-terminal/session.json`
 
-## Model Support
+## Model Catalog
 
-250+ models across providers configured in `internal/llm/gateway/models.json`:
+8 models available through the OpenCode Go gateway, configured in `internal/llm/gateway/models.json`:
 
-| Provider | Models |
-|----------|--------|
-| OpenAI | o3, gpt-5.2, gpt-4.1, gpt-4o-mini, o1, o1-mini |
-| Anthropic | claude-sonnet-4-20250514, claude-3.7-sonnet, claude-3.5-haiku |
-| Google | gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash |
-| DeepSeek | deepseek-chat, deepseek-reasoner |
-| Meta | llama-4-scout, llama-4-maverick, llama-3.3-70b |
-| Mistral | mistral-large, codestral, ministral |
-| xAI | grok-3, grok-3-fast, grok-3-mini |
+| Model ID | Provider |
+|----------|----------|
+| `opencode-go/deepseek-v4-pro` | DeepSeek (default) |
+| `opencode-go/deepseek-v4-flash` | DeepSeek |
+| `opencode-go/glm-5.1` | GLM |
+| `opencode-go/glm-5.2` | GLM |
+| `opencode-go/kimi-k2.6` | Moonshot |
+| `opencode-go/kimi-k2.7-code` | Moonshot |
+| `opencode-go/mimo-v2.5` | Mimo |
+| `opencode-go/mimo-v2.5-pro` | Mimo |
 
-Default model: `openai/gpt-5.2`
+Default model: `opencode-go/deepseek-v4-pro`
 
-## Language
+## Environment
 
-- **Go**: ~4,000 LOC in cmd/ + internal/
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `AI_GATEWAY_API_KEY` | Yes | — | OpenCode Go API key |
+| `AI_GATEWAY_BASE_URL` | No | `https://opencode.ai/zen/go/v1` | Gateway endpoint |
+| `AI_GATEWAY_MODEL` | No | `opencode-go/deepseek-v4-pro` | Model override |
+
+## Codebase
+
+- **Go**: ~3,200 LOC across `cmd/` + `internal/`
 - **Dependencies**: bubbletea, bubbles, glamour, lipgloss, godotenv
