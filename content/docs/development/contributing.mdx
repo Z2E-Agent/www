@@ -5,26 +5,44 @@ description: How to contribute to z2e-terminal development.
 
 ## Project Structure
 
-```
-z2e-terminal/
-├── cmd/z2e-terminal/     # Entry point (main.go, ~20 LOC)
-├── internal/
-│   ├── agent/            # Agent runtime, tools, policy, debug
-│   │   ├── runtime.go    # Core agent loop (~303 LOC)
-│   │   ├── tools.go      # Tool definitions + execution (~435 LOC)
-│   │   ├── policy.go     # Command policy (~19 LOC)
-│   │   ├── prompt.go     # System prompt loader (~27 LOC)
-│   │   ├── session_debug.go  # Debug snapshots (~237 LOC)
-│   │   ├── types.go      # Shared types (~53 LOC)
-│   │   └── prompts/      # Embedded system prompt
-│   ├── config/           # Env config loader + tests
-│   ├── executor/         # Shell command runner (~141 LOC)
-│   ├── llm/gateway/      # SSE streaming client + model catalog + tests
-│   └── ui/               # Bubble Tea TUI (~1,333 LOC)
-├── justfile              # Canonical build/test recipes
-├── VERSION               # Plain-text version (read by justfile)
-└── .env.example          # Environment template
-```
+<Files>
+  <Folder name="cmd/z2e-terminal" defaultOpen>
+    <File name="main.go" />
+  </Folder>
+  <Folder name="internal" defaultOpen>
+    <Folder name="agent" defaultOpen>
+      <File name="runtime.go" />
+      <File name="tools.go" />
+      <File name="policy.go" />
+      <File name="prompt.go" />
+      <File name="session_debug.go" />
+      <File name="types.go" />
+      <Folder name="prompts" />
+    </Folder>
+    <Folder name="config" />
+    <Folder name="executor" />
+    <Folder name="llm/gateway" />
+    <Folder name="ui" />
+  </Folder>
+  <File name="justfile" />
+  <File name="VERSION" />
+  <File name=".env.example" />
+</Files>
+
+| Path | Role | LOC |
+| --- | --- | --- |
+| `cmd/z2e-terminal/main.go` | Entry point | ~20 |
+| `internal/agent/runtime.go` | Core agent loop | ~303 |
+| `internal/agent/tools.go` | Tool definitions + execution | ~435 |
+| `internal/agent/policy.go` | Command policy | ~19 |
+| `internal/agent/prompt.go` | System prompt loader | ~27 |
+| `internal/agent/session_debug.go` | Debug snapshots | ~237 |
+| `internal/agent/types.go` | Shared types | ~53 |
+| `internal/agent/prompts/` | Embedded system prompt | — |
+| `internal/config/` | Env config loader + tests | — |
+| `internal/executor/runner.go` | Shell command runner | ~141 |
+| `internal/llm/gateway/` | SSE streaming client + model catalog + tests | — |
+| `internal/ui/` | Bubble Tea TUI (`model.go`, `stream.go`) | ~1,333 |
 
 Total: ~3,200 LOC of Go across a 5-layer architecture.
 

@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Commits
+
+Conventional Commits, **subject line only** — no body, no bullet list. One line per commit, always.
+
 ## Read AGENTS.md first
 
 `AGENTS.md` is the source of truth for commands, CI/commit flow, generated code, path aliases, and patches. Key points that bite if missed:
