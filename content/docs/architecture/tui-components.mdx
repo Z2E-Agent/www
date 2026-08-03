@@ -49,9 +49,9 @@ The TUI is built with the **Bubble Tea** framework (`github.com/charmbracelet/bu
 
 SSE chunks travel through a 6-stage pipeline:
 
-```text
-SSE Chunk → Gateway Client → Stream Bridge → TUI Update → Lipgloss Render → Terminal
-```
+<Mermaid chart={`flowchart LR
+    A[SSE Chunk] --> B[Gateway Client] --> C[Stream Bridge] --> D[TUI Update] --> E[Lipgloss Render] --> F[Terminal]
+`} />
 
 1. **SSE Chunk**: Raw `data:` lines from the OpenCode Go gateway
 2. **Gateway Client**: Parses SSE, extracts text deltas and tool call fragments

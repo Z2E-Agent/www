@@ -7,13 +7,10 @@ The agent connects to the OpenCode Go gateway, which routes requests to availabl
 
 ## Architecture
 
-```text
-z2e-terminal → OpenCode Go Gateway → Provider API
-                     │
-               SSE Stream
-                     │
-          Text deltas + Tool calls
-```
+<Mermaid chart={`flowchart LR
+    A[z2e-terminal] --> B[OpenCode Go Gateway] --> C[Provider API]
+    C -- "SSE Stream" --> D["Text deltas + Tool calls"] --> A
+`} />
 
 All communication uses SSE (Server-Sent Events) streaming for real-time output.
 

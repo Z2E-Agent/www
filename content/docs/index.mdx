@@ -5,17 +5,12 @@ description: Autonomous AI agent TUI for penetration testing and CTF challenges.
 
 z2e-terminal is an autonomous AI agent TUI built with **Go** and **Bubble Tea**. It accepts natural-language missions, plans and executes multi-step CLI actions autonomously, observes output, reasons, and iterates until the objective is reached or runtime limits are hit.
 
-```text
-User Input
-    ↓
-UI Layer (Bubble Tea TUI)  ←  model.go / stream.go
-    ↓
-Agent Runtime  ←  Plan → Execute → Observe → Replan (up to 30 steps)
-    ↓                    ↓
-LLM Gateway            Executor
-(SSE streaming)        (bash -lc)
-client.go              runner.go
-```
+<Mermaid chart={`flowchart TD
+    U[User Input] --> UI["UI Layer — Bubble Tea TUI<br/>model.go / stream.go"]
+    UI --> AR["Agent Runtime<br/>Plan → Execute → Observe → Replan (≤30 steps)"]
+    AR --> GW["LLM Gateway<br/>SSE streaming · client.go"]
+    AR --> EX["Executor<br/>bash -lc · runner.go"]
+`} />
 
 ## Current Version
 

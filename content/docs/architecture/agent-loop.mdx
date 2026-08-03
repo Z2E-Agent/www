@@ -7,19 +7,16 @@ The agent runtime (`internal/agent/runtime.go`) drives a synchronous step loop. 
 
 ## Loop Overview
 
-```text
-Step Loop (max 30 steps)
-    │
-    1. LLM Turn ──→ 2. Aggregate tool_calls
-    │                        │
-    3. Emit response    4. Execute (bash -lc)
-                             │
-                    5. Observe & Replan ──→ back to step 1
-                             │
-                        ┌────┴────┐
-                     continue?   stop
-                                (see Terminal Conditions)
-```
+<Mermaid chart={`flowchart TD
+    A[1. LLM Turn] --> B[2. Aggregate tool_calls]
+    B --> C[3. Emit assistant response]
+    C --> D[4. Execute bash -lc]
+    D --> E[5. Observe & Replan]
+    E -->|continue| A
+    E -->|stop| F([Terminal Conditions])
+`} />
+
+<Callout title="Step loop">Runs up to 30 steps; each step is one LLM turn plus optional tool executions.</Callout>
 
 ## Step-by-Step
 

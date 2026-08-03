@@ -15,9 +15,12 @@ Both names map to the same handler. The tool schema requires a `description` fie
 
 ## Execution Flow
 
-```text
-LLM tool_call → Policy Check (non-empty?) → Runner (bash -lc) → Output (64KB cap + timeout) → Observation
-```
+<Mermaid chart={`flowchart LR
+    A[LLM tool_call] --> B{Policy Check<br/>non-empty?}
+    B --> C[Runner<br/>bash -lc]
+    C --> D[Output<br/>64KB cap + timeout]
+    D --> E[Observation]
+`} />
 
 1. Agent runtime extracts tool name and arguments from the LLM response
 2. **Policy check** (`internal/agent/policy.go`): validates the command is non-empty
