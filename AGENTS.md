@@ -38,14 +38,11 @@ Documentation site for the Z²ᴱ framework. Next.js 16 + Fumadocs MDX, managed 
 
 ## Patches
 
-Two patched deps live in `patches/` (applied automatically by Bun on install):
-- `fumadocs-mdx@15.0.9` (note: installed version is `^15.0.13`; patch targets the resolved 15.0.9 transitive surface — verify if bumping)
-- `@tailwindcss/node@4.3.0`
-
-When upgrading either package, re-check that the patches still apply or update them.
+None. Earlier `patches/` for `fumadocs-mdx` and `@tailwindcss/node` (swapping `module.register` → `registerHooks`) were dropped after upgrading to `fumadocs-mdx@^15.2.2` / `@tailwindcss/node@4.3.3`, which fixed the issue upstream. If a Node `module.register` deprecation error resurfaces in MDX/Tailwind, that's the code path to re-patch.
 
 ## Toolchain notes
 
 - Tailwind CSS 4 via `@tailwindcss/postcss` (see `postcss.config.mjs`); no `tailwind.config.*` file — Tailwind 4 config-less setup.
 - ESLint flat config (`eslint.config.mjs`) extends `eslint-config-next/core-web-vitals` + `eslint-config-next/typescript`. Ignores: `node_modules`, `.next`, `out`, `build`, `.source`, `next-env.d.ts`.
+- TypeScript is pinned to `^6.0.3`, not `^7`. TS 7 (the native port) is latest but Next 16.2.12's generated route types (`.next/dev/types/validator.ts`) don't type-check clean under it, and `next dev`/`build` reject it ("TypeScript 7.x does not provide the compiler API required by Next.js"). Stay on TS 6 until Next ships TS-7-clean generated types. `next.config.mjs`'s `experimental.useTypeScriptCli` gets past the compiler-API error but not the generated-type errors — don't rely on it.
 - Deployment target is ambiguous: `@opennextjs/cloudflare` dependency indicates Cloudflare (OpenNext adapter), but `README.md` says Vercel. Confirm the deploy target before changing build/runtime config.
